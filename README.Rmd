@@ -23,10 +23,16 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/ChristianGoueguel/manifold-sculpting/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ChristianGoueguel/manifold-sculpting/actions/workflows/R-CMD-check.yaml)
+[![Project Status: Active – The project has reached a stable, usable
+state and is being actively
+developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![Lifecycle:
 stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
 [![Codecov test
 coverage](https://codecov.io/gh/ChristianGoueguel/manifold-sculpting/graph/badge.svg)](https://app.codecov.io/gh/ChristianGoueguel/manifold-sculpting)
+[![r-universe](https://christiangoueguel.r-universe.dev/badges/manifoldsculpting)](https://christiangoueguel.r-universe.dev/manifoldsculpting)
+[![License:
+MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 <!-- badges: end -->
 
@@ -69,7 +75,18 @@ the manifold.
 
 ## Installation
 
-You can install the development version of manifoldsculpting from
+Install the development version as a prebuilt binary from
+[r-universe](https://christiangoueguel.r-universe.dev/manifoldsculpting),
+which needs no compiler:
+
+``` r
+install.packages(
+  "manifoldsculpting",
+  repos = c("https://christiangoueguel.r-universe.dev", "https://cloud.r-project.org")
+)
+```
+
+Or build it from
 [GitHub](https://github.com/ChristianGoueguel/manifold-sculpting) with:
 
 ``` r
