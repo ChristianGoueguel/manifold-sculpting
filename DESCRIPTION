@@ -1,7 +1,7 @@
 Package: manifoldsculpting
 Type: Package
 Title: Nonlinear Dimensionality Reduction by Manifold Sculpting
-Version: 0.1.0
+Version: 1.2.1
 Authors@R: c(
     person("Christian L.", "Goueguel", , "christian.goueguel@gmail.com", role = c("aut", "cre"))
   )
