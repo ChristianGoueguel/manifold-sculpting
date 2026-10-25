@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# manifoldsculpting
+# manifoldsculpting <a href="https://christiangoueguel.com/manifold-sculpting/"><img src="man/figures/logo.png" align="right" height="139" alt="manifoldsculpting website" /></a>
 
 <!-- badges: start -->
 
