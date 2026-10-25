@@ -36,6 +36,10 @@ the manifold.
   and
   [`sim_s_curve()`](https://christiangoueguel.com/manifold-sculpting/reference/sim_manifolds.md):
   the test manifolds of the paper, with their intrinsic coordinates.
+- A
+  [comparison](https://christiangoueguel.com/manifold-sculpting/articles/comparison.html)
+  with Isomap, LLE, t-SNE, UMAP, nonlinear PCA and kernel PCA
+  ([`vignette("comparison")`](https://christiangoueguel.com/manifold-sculpting/articles/comparison.md)).
 
 ## Installation
 

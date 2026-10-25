@@ -244,6 +244,14 @@ rec_tune <- recipe(v ~ x + y + z, data = train) |>
                           neighbors = tune(), squishing_rate = tune())
 ```
 
+## Comparison with other methods
+
+[`vignette("comparison")`](https://christiangoueguel.com/manifold-sculpting/articles/comparison.md)
+compares Manifold Sculpting with Isomap, LLE, t-SNE, UMAP, nonlinear PCA
+and kernel PCA on five test problems, for the accuracy of the
+embeddings, the preservation of neighborhoods and local distances, the
+computing time and the embedding of new samples.
+
 ## References
 
 Gashler, M., Ventura, D. and Martinez, T. (2008). Iterative non-linear

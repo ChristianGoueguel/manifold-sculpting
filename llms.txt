@@ -36,6 +36,10 @@ the manifold.
   and
   [`sim_s_curve()`](https://christiangoueguel.com/manifold-sculpting/reference/sim_manifolds.md):
   the test manifolds of the paper, with their intrinsic coordinates.
+- A
+  [comparison](https://christiangoueguel.com/manifold-sculpting/articles/comparison.html)
+  with Isomap, LLE, t-SNE, UMAP, nonlinear PCA and kernel PCA
+  ([`vignette("comparison")`](https://christiangoueguel.com/manifold-sculpting/articles/comparison.md)).
 
 ## Installation
 
@@ -251,7 +255,9 @@ Manifold Sculpting as a preprocessing step for tidymodels.
 
 # Articles
 
-### All vignettes
+### Articles
 
 - [Introduction to
   manifoldsculpting](https://christiangoueguel.com/manifold-sculpting/articles/manifoldsculpting.md):
+- [Comparison with other nonlinear dimensionality reduction
+  methods](https://christiangoueguel.com/manifold-sculpting/articles/comparison.md):

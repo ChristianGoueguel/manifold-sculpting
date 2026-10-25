@@ -24,3 +24,9 @@
   and
   [`sim_s_curve()`](https://christiangoueguel.com/manifold-sculpting/reference/sim_manifolds.md)
   simulate the test manifolds of the paper.
+
+- New
+  [`vignette("comparison")`](https://christiangoueguel.com/manifold-sculpting/articles/comparison.md)
+  compares Manifold Sculpting with Isomap, LLE, t-SNE, UMAP, nonlinear
+  PCA and kernel PCA. It is precomputed, from
+  `vignettes/comparison.Rmd.orig`, by `vignettes/precompute.R`.

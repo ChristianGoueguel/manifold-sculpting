@@ -42,6 +42,12 @@
       <ul class="navbar-nav me-auto">
 <li class="active nav-item"><a class="nav-link" href="../articles/manifoldsculpting.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
+<li><a class="dropdown-item" href="../articles/comparison.html">Comparison with other nonlinear dimensionality reduction methods</a></li>
+  </ul>
+</li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
@@ -296,6 +302,15 @@ chosen by resampling with <code>tune::tune_grid()</code>:</p>
 <code class="sourceCode R"><span><span class="va">rec_tune</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html" class="external-link">recipe</a></span><span class="op">(</span><span class="va">v</span> <span class="op">~</span> <span class="va">x</span> <span class="op">+</span> <span class="va">y</span> <span class="op">+</span> <span class="va">z</span>, data <span class="op">=</span> <span class="va">train</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/step_manifold_sculpting.html">step_manifold_sculpting</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html" class="external-link">all_numeric_predictors</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>                          neighbors <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="op">)</span>, squishing_rate <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="comparison-with-other-methods">Comparison with other methods<a class="anchor" aria-label="anchor" href="#comparison-with-other-methods"></a>
+</h2>
+<p><code><a href="../articles/comparison.html">vignette("comparison")</a></code> compares Manifold Sculpting with
+Isomap, LLE, t-SNE, UMAP, nonlinear PCA and kernel PCA on five test
+problems, for the accuracy of the embeddings, the preservation of
+neighborhoods and local distances, the computing time and the embedding
+of new samples.</p>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
