@@ -18,3 +18,10 @@ reference:
   - title: Simulated data
     contents:
       - sim_manifolds
+
+articles:
+  - title: Articles
+    navbar: ~
+    contents:
+      - manifoldsculpting
+      - comparison

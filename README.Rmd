@@ -63,6 +63,9 @@ the manifold.
     sculpting iterations.
 -   `sim_swiss_roll()` and `sim_s_curve()`: the test manifolds of the
     paper, with their intrinsic coordinates.
+-   A [comparison](https://christiangoueguel.com/manifold-sculpting/articles/comparison.html)
+    with Isomap, LLE, t-SNE, UMAP, nonlinear PCA and kernel PCA
+    (`vignette("comparison")`).
 
 ## Installation
 

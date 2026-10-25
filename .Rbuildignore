@@ -9,4 +9,7 @@
 ^codecov\.yml$
 ^cran-comments\.md$
 ^bench$
+^vignettes/comparison\.Rmd\.orig$
+^vignettes/precompute\.R$
+^vignettes/comparison-cache$
 ^data-raw$

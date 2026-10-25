@@ -16,3 +16,7 @@
 
 * `sim_swiss_roll()` and `sim_s_curve()` simulate the test manifolds of the
   paper.
+
+* New `vignette("comparison")` compares Manifold Sculpting with Isomap, LLE,
+  t-SNE, UMAP, nonlinear PCA and kernel PCA. It is precomputed, from
+  `vignettes/comparison.Rmd.orig`, by `vignettes/precompute.R`.
