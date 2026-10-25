@@ -1,6 +1,6 @@
 # Changelog
 
-## manifoldsculpting 0.1.0
+## manifoldsculpting 1.2.1
 
 - Initial version.
 
