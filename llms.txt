@@ -43,7 +43,19 @@ the manifold.
 
 ## Installation
 
-You can install the development version of manifoldsculpting from
+Install the development version as a prebuilt binary from
+[r-universe](https://christiangoueguel.r-universe.dev/manifoldsculpting),
+which needs no compiler:
+
+``` r
+
+install.packages(
+  "manifoldsculpting",
+  repos = c("https://christiangoueguel.r-universe.dev", "https://cloud.r-project.org")
+)
+```
+
+Or build it from
 [GitHub](https://github.com/ChristianGoueguel/manifold-sculpting) with:
 
 ``` r
