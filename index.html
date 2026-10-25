@@ -6,6 +6,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Nonlinear Dimensionality Reduction by Manifold Sculpting • manifoldsculpting</title>
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" sizes="any" href="favicon.ico">
+<link rel="manifest" href="site.webmanifest">
 <!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
   window.MathJax = {
     chtml: {
@@ -19,6 +24,7 @@
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Nonlinear Dimensionality Reduction by Manifold Sculpting">
 <meta name="description" content="Manifold Sculpting (Gashler, Ventura and Martinez (2008) &lt;https://proceedings.neurips.cc/paper/2007/hash/c06d06da9666a219db15cf575aff2824-Abstract.html&gt;) is an iterative nonlinear dimensionality reduction method. It records the distances and angles between each point and its nearest neighbors, then gradually scales the data out of the dimensions to be removed while moving the points in the remaining dimensions to restore these local relationships, as if surface tension were acting on the manifold. New samples are embedded by solving the same local problem against the training embedding. The neighbor search and the sculpting iterations are written in C++ with RcppArmadillo, and step_manifold_sculpting() makes the method available as a recipes preprocessing step for tidymodels workflows.">
 <meta property="og:description" content="Manifold Sculpting (Gashler, Ventura and Martinez (2008) &lt;https://proceedings.neurips.cc/paper/2007/hash/c06d06da9666a219db15cf575aff2824-Abstract.html&gt;) is an iterative nonlinear dimensionality reduction method. It records the distances and angles between each point and its nearest neighbors, then gradually scales the data out of the dimensions to be removed while moving the points in the remaining dimensions to restore these local relationships, as if surface tension were acting on the manifold. New samples are embedded by solving the same local problem against the training embedding. The neighbor search and the sculpting iterations are written in C++ with RcppArmadillo, and step_manifold_sculpting() makes the method available as a recipes preprocessing step for tidymodels workflows.">
+<meta property="og:image" content="https://christiangoueguel.com/manifold-sculpting/logo.png">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -54,8 +60,11 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="manifoldsculpting">manifoldsculpting<a class="anchor" aria-label="anchor" href="#manifoldsculpting"></a>
-</h1></div>
+<div class="page-header">
+<img src="logo.png" class="logo" alt=""><h1 id="manifoldsculpting-">manifoldsculpting 
+<a class="anchor" aria-label="anchor" href="#manifoldsculpting-"></a>
+</h1>
+</div>
 <!-- badges: start -->
 
 <!-- badges: end -->
