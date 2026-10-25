@@ -1,0 +1,53 @@
+Package: manifoldsculpting
+Type: Package
+Title: Nonlinear Dimensionality Reduction by Manifold Sculpting
+Version: 0.1.0
+Authors@R: c(
+    person("Christian L.", "Goueguel", , "christian.goueguel@gmail.com", role = c("aut", "cre"))
+  )
+Description: Manifold Sculpting (Gashler, Ventura and Martinez (2008)
+    <https://proceedings.neurips.cc/paper/2007/hash/c06d06da9666a219db15cf575aff2824-Abstract.html>)
+    is an iterative nonlinear dimensionality reduction method. It records
+    the distances and angles between each point and its nearest neighbors,
+    then gradually scales the data out of the dimensions to be removed
+    while moving the points in the remaining dimensions to restore these
+    local relationships, as if surface tension were acting on the
+    manifold. New samples are embedded by solving the same local problem
+    against the training embedding. The neighbor search and the sculpting
+    iterations are written in C++ with 'RcppArmadillo', and
+    step_manifold_sculpting() makes the method available as a 'recipes'
+    preprocessing step for 'tidymodels' workflows.
+License: MIT + file LICENSE
+URL: https://github.com/ChristianGoueguel/manifold-sculpting,
+    https://christiangoueguel.com/manifold-sculpting/
+BugReports: https://github.com/ChristianGoueguel/manifold-sculpting/issues
+Depends: 
+    R (>= 4.1.0),
+    recipes (>= 1.1.0)
+Imports: 
+    cli,
+    dials (>= 1.2.0),
+    generics,
+    Rcpp,
+    rlang (>= 1.1.0),
+    stats,
+    tibble,
+    vctrs,
+    withr
+Suggests: 
+    ggplot2,
+    knitr,
+    parsnip,
+    rmarkdown,
+    testthat (>= 3.0.0),
+    workflows
+LinkingTo: 
+    Rcpp,
+    RcppArmadillo
+VignetteBuilder: 
+    knitr
+Config/testthat/edition: 3
+Encoding: UTF-8
+Language: en-US
+Roxygen: list(markdown = TRUE)
+Config/roxygen2/version: 8.1.0

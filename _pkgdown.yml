@@ -1,0 +1,20 @@
+url: https://christiangoueguel.com/manifold-sculpting/
+
+template:
+  bootstrap: 5
+  math-rendering: mathjax
+
+reference:
+  - title: Manifold Sculpting
+    desc: Fit the algorithm and embed new samples.
+    contents:
+      - manifold_sculpting
+      - predict.manifold_sculpting
+  - title: Recipes step
+    desc: Manifold Sculpting as a preprocessing step for tidymodels.
+    contents:
+      - step_manifold_sculpting
+      - squishing_rate
+  - title: Simulated data
+    contents:
+      - sim_manifolds
