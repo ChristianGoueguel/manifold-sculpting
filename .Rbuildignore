@@ -13,3 +13,5 @@
 ^vignettes/precompute\.R$
 ^vignettes/comparison-cache$
 ^data-raw$
+^vignettes/spectroscopy\.Rmd\.orig$
+^vignettes/spectroscopy-cache$

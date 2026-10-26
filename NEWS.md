@@ -20,3 +20,9 @@
 * New `vignette("comparison")` compares Manifold Sculpting with Isomap, LLE,
   t-SNE, UMAP, nonlinear PCA and kernel PCA. It is precomputed, from
   `vignettes/comparison.Rmd.orig`, by `vignettes/precompute.R`.
+
+* New `vignette("spectroscopy")` applies Manifold Sculpting to the NIR
+  spectra of meat of the modeldata package, with the tidyverse and
+  tidymodels: it unfolds the arch of the PCA scores, and compares
+  principal component regression with regression on the embedding for
+  the prediction of protein.

@@ -56,6 +56,9 @@ the manifold.
   [comparison](https://christiangoueguel.com/manifold-sculpting/articles/comparison.html)
   with Isomap, LLE, t-SNE, UMAP, nonlinear PCA and kernel PCA
   (`vignette("comparison")`).
+- A spectroscopy example on the [NIR spectra of
+  meat](https://christiangoueguel.com/manifold-sculpting/articles/spectroscopy.html),
+  with the tidyverse and tidymodels (`vignette("spectroscopy")`).
 
 ## Installation
 

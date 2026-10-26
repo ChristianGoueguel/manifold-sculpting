@@ -1,0 +1,481 @@
+---
+title: "Near-infrared spectra of meat"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Near-infrared spectra of meat}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r}
+#| include: false
+# This file is knitted by vignettes/precompute.R; see "Reproducibility" below.
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "spectroscopy-",
+  fig.width = 7,
+  fig.height = 4,
+  dpi = 110,
+  cache = TRUE,
+  cache.path = "spectroscopy-cache/",
+  autodep = TRUE,
+  error = FALSE,
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+The principal component scores of near-infrared (NIR) spectra often lie on
+a curve rather than in a cloud: the spectra respond nonlinearly to the
+composition of the samples, and principal component analysis (PCA), which
+is linear, bends the main gradient of the data into an arch. This vignette
+looks at such an arch in the NIR spectra of meat, unfolds it with Manifold
+Sculpting, and asks whether the unfolded coordinates predict the protein
+content of the samples better than the principal components, with the
+tidyverse and tidymodels packages.
+
+The results were computed once, with the code shown here, because tuning
+the models takes several minutes (see [Reproducibility](#reproducibility)).
+
+```{r packages}
+library(manifoldsculpting) # also attaches recipes
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(rsample)
+library(parsnip)
+library(workflows)
+library(tune)
+library(yardstick)
+
+theme_set(theme_minimal(base_size = 10))
+rainbow_protein <- scale_colour_gradientn(
+  colours = rev(rainbow(7, end = 0.8)),
+  name = "Protein (%)"
+)
+```
+
+## The data
+
+The `meats` data of the modeldata package are the Tecator data set
+(Borggaard and Thodberg, 1992): 215 samples of finely chopped meat,
+with their absorbance spectra measured by transmission at 100 wavelengths
+from 850 to 1050 nm, and their water, fat and protein contents (%).
+
+```{r data}
+data(meats, package = "modeldata")
+meats
+```
+
+In long format, with one row per sample and wavelength, the spectra are
+easy to transform and to plot:
+
+```{r spectra}
+wavelengths <- seq(850, 1050, length.out = 100)
+
+spectra <- meats |>
+  mutate(sample = row_number()) |>
+  pivot_longer(starts_with("x_"), names_to = "channel", values_to = "absorbance") |>
+  mutate(wavelength = wavelengths[as.integer(sub("x_", "", channel))])
+
+spectra
+```
+
+```{r fig-spectra}
+#| fig.cap: "NIR spectra of the 215 meat samples, colored by their protein content."
+ggplot(spectra, aes(wavelength, absorbance, group = sample, colour = protein)) +
+  geom_line(linewidth = 0.3) +
+  rainbow_protein +
+  labs(x = "Wavelength (nm)", y = "Absorbance")
+```
+
+The spectra differ mostly by vertical offsets, caused by light scattering
+in samples of different texture, which have little to do with their
+composition. The composition itself has only two degrees of freedom,
+since water, fat and protein add up to about 99%: protein decreases as fat
+increases (correlation `r round(cor(meats$fat, meats$protein), 2)`), but
+among lean samples it varies on its own.
+
+```{r fig-composition}
+#| fig.height: 3.2
+#| fig.cap: "Protein and fat contents of the samples."
+ggplot(meats, aes(fat, protein, colour = protein)) +
+  geom_point(size = 1.5) +
+  rainbow_protein +
+  labs(x = "Fat (%)", y = "Protein (%)")
+```
+
+## Scatter correction
+
+The standard normal variate (SNV) transformation (Barnes et al., 1989)
+removes most of the scatter: each spectrum is centered and scaled by its
+own mean and standard deviation.
+
+```{r snv}
+spectra <- spectra |>
+  group_by(sample) |>
+  mutate(snv = (absorbance - mean(absorbance)) / sd(absorbance)) |>
+  ungroup()
+
+meats_snv <- spectra |>
+  select(sample, water, fat, protein, channel, snv) |>
+  pivot_wider(names_from = channel, values_from = snv) |>
+  select(-sample)
+```
+
+```{r fig-snv}
+#| fig.cap: "The spectra after the SNV transformation."
+ggplot(spectra, aes(wavelength, snv, group = sample, colour = protein)) +
+  geom_line(linewidth = 0.3) +
+  rainbow_protein +
+  labs(x = "Wavelength (nm)", y = "SNV absorbance")
+```
+
+## Principal component analysis
+
+The models share a recipe: protein is the outcome, water and fat are kept
+for the plots but are not predictors, and the spectra are centered.
+
+```{r recipe}
+base_recipe <- function(data) {
+  recipe(protein ~ ., data = data) |>
+    update_role(water, fat, new_role = "composition") |>
+    step_center(all_predictors())
+}
+
+pca_raw <- base_recipe(meats) |>
+  step_pca(all_predictors(), num_comp = 2) |>
+  prep()
+pca_snv <- base_recipe(meats_snv) |>
+  step_pca(all_predictors(), num_comp = 2) |>
+  prep()
+
+# Percentage of variance of the first three components
+variance <- bind_rows(
+  raw = tidy(pca_raw, number = 2, type = "variance"),
+  SNV = tidy(pca_snv, number = 2, type = "variance"),
+  .id = "spectra"
+) |>
+  filter(terms == "percent variance", component <= 3) |>
+  pivot_wider(names_from = component, names_prefix = "PC", values_from = value) |>
+  select(spectra, PC1, PC2, PC3)
+variance
+```
+
+```{r fig-pca}
+#| fig.height: 3.6
+#| fig.cap: "Scores of the first two principal components of the raw and the SNV spectra, colored by protein content."
+pca_scores <- bind_rows(
+  "Raw spectra" = bake(pca_raw, new_data = NULL),
+  "SNV spectra" = bake(pca_snv, new_data = NULL),
+  .id = "spectra"
+)
+
+ggplot(pca_scores, aes(PC1, PC2, colour = protein)) +
+  geom_point(size = 1.5) +
+  facet_wrap(~spectra, scales = "free") +
+  rainbow_protein
+```
+
+On the raw spectra, the first component is the scatter, with
+`r round(variance$PC1[variance$spectra == "raw"], 1)`% of the variance,
+and the protein contents are mixed up. After the SNV transformation, the
+first two components carry
+`r round(variance$PC1[variance$spectra == "SNV"])`% and
+`r round(variance$PC2[variance$spectra == "SNV"])`% of the variance, and
+the scores lie on an **arch**: the samples richest in protein are along
+the left arm and at the top, and the poorest at the end of the right arm. This is the horseshoe effect of ordination methods
+(Diaconis et al., 2008): when the data follow one dominant nonlinear
+gradient, PCA represents it by a curve that spreads over two components.
+Here, the gradient is mostly that of fat and water, which change the
+spectra the most, and protein follows it because it decreases as fat
+increases.
+
+## Manifold Sculpting
+
+`step_manifold_sculpting()` replaces `step_pca()` in the same recipe. It
+looks for coordinates that preserve the distances and angles between
+neighboring spectra (20 neighbors here), with the best of three runs:
+
+```{r ms}
+ms_snv <- base_recipe(meats_snv) |>
+  step_manifold_sculpting(all_predictors(), num_comp = 2, neighbors = 20,
+                          options = list(nstart = 3), seed = 1) |>
+  prep()
+
+ms_scores <- bake(ms_snv, new_data = NULL)
+ms_scores |> select(MS1, MS2, water, fat, protein)
+```
+
+```{r fig-ms}
+#| fig.height: 3.6
+#| fig.cap: "PCA scores and Manifold Sculpting embedding of the SNV spectra, colored by protein content."
+bind_rows(
+  "PCA" = bake(pca_snv, new_data = NULL) |> rename(dim_1 = PC1, dim_2 = PC2),
+  "Manifold Sculpting" = ms_scores |> rename(dim_1 = MS1, dim_2 = MS2),
+  .id = "method"
+) |>
+  mutate(method = factor(method, levels = c("PCA", "Manifold Sculpting"))) |>
+  ggplot(aes(dim_1, dim_2, colour = protein)) +
+  geom_point(size = 1.5) +
+  facet_wrap(~method, scales = "free") +
+  rainbow_protein +
+  labs(x = "First dimension", y = "Second dimension")
+```
+
+Manifold Sculpting unfolds the arch. The main gradient now runs along the
+first dimension, from the fattest samples, poorest in protein, on one side
+to the leanest on the other. The samples of the left arm of the arch, lean
+and rich in protein, form a separate branch along the second dimension:
+
+```{r arms}
+# Where the samples of the left arm of the PCA arch are in the embedding
+ms_scores |>
+  mutate(PC1 = bake(pca_snv, new_data = NULL)$PC1) |>
+  mutate(arch = if_else(PC1 < -1.5, "left arm", "rest of the arch")) |>
+  group_by(arch) |>
+  summarise(samples = n(), across(c(MS1, MS2, water, fat, protein), mean))
+```
+
+The two branches are the two degrees of freedom of the composition: the
+gradient of fat against water and protein, and, among lean samples, the
+variation of protein on its own. PCA folds them into one arch; Manifold
+Sculpting lays them side by side.
+
+The first dimension alone shows the difference with PCA. With a single
+dimension, Manifold Sculpting orders the spectra along the arch, while the
+first principal component is a projection across it:
+
+```{r one-d}
+first_dimension <- bind_rows(
+  "PC1" = base_recipe(meats_snv) |>
+    step_pca(all_predictors(), num_comp = 1) |>
+    prep() |>
+    bake(new_data = NULL) |>
+    rename(dimension = PC1),
+  "Manifold Sculpting, 1 dimension" = base_recipe(meats_snv) |>
+    step_manifold_sculpting(all_predictors(), num_comp = 1, neighbors = 20,
+                            options = list(nstart = 3), seed = 1) |>
+    prep() |>
+    bake(new_data = NULL) |>
+    rename(dimension = MS1),
+  .id = "method"
+) |>
+  mutate(protein_level = protein) |>
+  pivot_longer(c(water, fat, protein), names_to = "constituent", values_to = "percent") |>
+  mutate(constituent = factor(constituent, levels = c("water", "fat", "protein")))
+
+# Share of the variance of each constituent explained by a straight line
+linearity <- first_dimension |>
+  group_by(constituent, method) |>
+  summarise(r_squared = cor(dimension, percent)^2, .groups = "drop") |>
+  pivot_wider(names_from = method, values_from = r_squared)
+linearity
+```
+
+```{r fig-one-d}
+#| fig.height: 5.5
+#| fig.cap: "Contents against the first principal component and against a one-dimensional Manifold Sculpting embedding, with a straight-line fit."
+ggplot(first_dimension, aes(dimension, percent, colour = protein_level)) +
+  geom_point(size = 1) +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, colour = "grey20", linewidth = 0.5) +
+  facet_grid(constituent ~ method, scales = "free") +
+  rainbow_protein +
+  labs(x = NULL, y = "Content (%)")
+```
+
+A straight line on the one-dimensional embedding explains
+`r round(100 * linearity[[2]][linearity$constituent == "water"])`% of the
+variance of water and
+`r round(100 * linearity[[2]][linearity$constituent == "fat"])`% of fat,
+against `r round(100 * linearity$PC1[linearity$constituent == "water"])`%
+and `r round(100 * linearity$PC1[linearity$constituent == "fat"])`% for
+the first principal component, whose relation with the contents bends at
+the ends of the arch. Protein gains less
+(`r round(100 * linearity[[2]][linearity$constituent == "protein"])`%
+against `r round(100 * linearity$PC1[linearity$constituent == "protein"])`%):
+as the composition plot showed, it is not a function of the fat and water
+gradient alone.
+
+## Predicting protein
+
+Does unfolding the arch help to predict protein? Principal component
+regression and its Manifold Sculpting analog are compared, a linear
+regression on 1 to 6 dimensions. The samples are split into a training
+set (75%) and a test set, and the number of dimensions (and, for Manifold
+Sculpting, the number of neighbors) is chosen by 10-fold cross-validation
+on the training set.
+
+```{r split}
+set.seed(2026)
+meats_split <- initial_split(meats_snv, prop = 0.75, strata = protein)
+meats_train <- training(meats_split)
+folds <- vfold_cv(meats_train, v = 10, strata = protein)
+
+pca_wflow <- workflow(
+  base_recipe(meats_train) |>
+    step_pca(all_predictors(), num_comp = tune()),
+  linear_reg()
+)
+ms_wflow <- workflow(
+  base_recipe(meats_train) |>
+    step_manifold_sculpting(all_predictors(), num_comp = tune(), neighbors = tune(),
+                            options = list(nstart = 3), seed = 1),
+  linear_reg()
+)
+```
+
+```{r tune}
+pca_tuned <- tune_grid(
+  pca_wflow,
+  resamples = folds,
+  grid = tibble(num_comp = 1:6),
+  metrics = metric_set(rmse, rsq)
+)
+ms_tuned <- tune_grid(
+  ms_wflow,
+  resamples = folds,
+  grid = crossing(num_comp = 1:6, neighbors = c(10, 20, 30, 45, 60)),
+  metrics = metric_set(rmse, rsq)
+)
+```
+
+```{r fig-tune}
+#| fig.height: 3.6
+#| fig.cap: "Cross-validated RMSE of the protein predictions against the number of dimensions."
+cv_results <- bind_rows(
+  collect_metrics(pca_tuned) |> mutate(model = "PCA"),
+  collect_metrics(ms_tuned) |> mutate(model = paste0("MS, k = ", neighbors))
+) |>
+  filter(.metric == "rmse")
+model_levels <- c("PCA", paste0("MS, k = ", c(10, 20, 30, 45, 60)))
+
+ggplot(cv_results, aes(num_comp, mean, colour = factor(model, levels = model_levels))) +
+  geom_line(linewidth = 0.8) +
+  geom_point(size = 1.5) +
+  scale_colour_manual(values = c("#e34948", "#b7d3f6", "#86b6ef", "#3987e5", "#1c5cab", "#0d366b")) +
+  scale_x_continuous(breaks = 1:6) +
+  labs(x = "Number of dimensions", y = "Cross-validated RMSE (%)", colour = NULL)
+```
+
+```{r best}
+best_pca <- show_best(pca_tuned, metric = "rmse", n = 3)
+best_ms <- show_best(ms_tuned, metric = "rmse", n = 3)
+pca_rmse <- collect_metrics(pca_tuned) |> filter(.metric == "rmse")
+best_pca
+best_ms
+```
+
+The best settings of each model are refitted on the whole training set
+and evaluated on the test set:
+
+```{r last-fit}
+pca_final <- pca_wflow |>
+  finalize_workflow(select_best(pca_tuned, metric = "rmse")) |>
+  last_fit(meats_split, metrics = metric_set(rmse, rsq))
+ms_final <- ms_wflow |>
+  finalize_workflow(select_best(ms_tuned, metric = "rmse")) |>
+  last_fit(meats_split, metrics = metric_set(rmse, rsq))
+
+test_metrics <- bind_rows(
+  "PCA" = collect_metrics(pca_final),
+  "Manifold Sculpting" = collect_metrics(ms_final),
+  .id = "model"
+) |>
+  select(model, .metric, .estimate) |>
+  pivot_wider(names_from = .metric, values_from = .estimate)
+test_metrics
+```
+
+```{r fig-test}
+#| fig.height: 3.6
+#| fig.cap: "Predicted and measured protein contents of the test samples."
+bind_rows(
+  "PCA" = collect_predictions(pca_final),
+  "Manifold Sculpting" = collect_predictions(ms_final),
+  .id = "model"
+) |>
+  mutate(model = factor(model, levels = c("PCA", "Manifold Sculpting"))) |>
+  ggplot(aes(protein, .pred, colour = protein)) +
+  geom_abline(colour = "grey60", linetype = "dashed") +
+  geom_point(size = 1.5) +
+  facet_wrap(~model) +
+  coord_obs_pred() +
+  rainbow_protein +
+  labs(x = "Measured protein (%)", y = "Predicted protein (%)")
+```
+
+With few neighbors, the regression on the Manifold Sculpting embedding is
+clearly worse than principal component regression. It improves with the
+number of neighbors and, with `r best_ms$neighbors[1]` neighbors and
+`r best_ms$num_comp[1]` dimensions, matches principal component regression
+with `r best_pca$num_comp[1]` components (cross-validated RMSE of
+`r round(best_ms$mean[1], 2)` and `r round(best_pca$mean[1], 2)`). On the
+test set, the two models are equally accurate (RMSE of
+`r sprintf("%.2f", test_metrics$rmse[test_metrics$model == "Manifold Sculpting"])`
+and `r sprintf("%.2f", test_metrics$rmse[test_metrics$model == "PCA"])`).
+
+## What we see
+
+- **The arch is real.** Once the scatter is removed, the PCA scores of
+  the spectra lie on an arch: one nonlinear structure spread over two
+  components, the horseshoe effect.
+- **Manifold Sculpting unfolds it.** Its embedding separates the two
+  degrees of freedom of the composition, the fat and water gradient and
+  the protein content of lean samples, which the arch folds together.
+  With one dimension, it gives a coordinate along the fat and water
+  gradient that is much closer to linear than the first principal
+  component.
+- **Unfolding does not improve the prediction of protein.** Protein
+  absorbs weakly between 850 and 1050 nm, where the bands of water and fat
+  dominate, and much of its signal is in components of small variance:
+  the third principal component, with
+  `r round(variance$PC3[variance$spectra == "SNV"], 1)`% of the variance,
+  reduces the cross-validated RMSE of principal component regression from
+  `r round(pca_rmse$mean[pca_rmse$num_comp == 2], 2)` to
+  `r round(pca_rmse$mean[pca_rmse$num_comp == 3], 2)`. Manifold Sculpting,
+  which preserves the geometry of neighborhoods, keeps such small
+  variations only with large neighborhoods, where it behaves more like a
+  global method, and the two regressions are then equally accurate.
+
+Manifold Sculpting is thus a tool to see the structure of the spectra,
+and to obtain coordinates that follow the main gradient of composition.
+For the calibration of a minor constituent such as protein, a linear
+model on enough components, such as principal component regression or
+partial least squares, remains as accurate and simpler.
+
+## Reproducibility
+
+The vignette was computed with the following versions:
+
+```{r versions}
+#| echo: false
+pkgs <- c("manifoldsculpting", "modeldata", "recipes", "rsample", "parsnip",
+          "workflows", "tune", "yardstick", "dplyr", "tidyr", "ggplot2")
+versions <- data.frame(Package = pkgs, Version = vapply(pkgs, function(p) as.character(packageVersion(p)), ""))
+rownames(versions) <- NULL
+knitr::kable(versions)
+```
+
+To compute it again, install these packages and run
+`vignettes/precompute.R` from the source of the package. It knits
+`vignettes/spectroscopy.Rmd.orig`, which holds the code, into
+`vignettes/spectroscopy.Rmd`.
+
+## References
+
+Barnes, R. J., Dhanoa, M. S. and Lister, S. J. (1989). Standard normal
+variate transformation and de-trending of near-infrared diffuse
+reflectance spectra. *Applied Spectroscopy*, 43, 772–777.
+
+Borggaard, C. and Thodberg, H. H. (1992). Optimal minimal neural
+interpretation of spectra. *Analytical Chemistry*, 64, 545–551.
+
+Diaconis, P., Goel, S. and Holmes, S. (2008). Horseshoes in
+multidimensional scaling and local kernel methods. *The Annals of
+Applied Statistics*, 2, 777–807.
+
+Gashler, M., Ventura, D. and Martinez, T. (2008). Iterative non-linear
+dimensionality reduction with manifold sculpting. In *Advances in Neural
+Information Processing Systems 20*, 513–520.
