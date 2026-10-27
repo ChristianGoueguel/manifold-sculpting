@@ -68,7 +68,11 @@ from 850 to 1050 nm, and their water, fat and protein contents (%).
 
 ```{r data}
 data(meats, package = "modeldata")
-glimpse(meats)
+
+# Absorbances in x_001 to x_100 (the first three and the last shown), and composition
+meats |>
+  select(x_001:x_003, x_100, water, fat, protein) |>
+  glimpse()
 ```
 
 In long format, with one row per sample and wavelength, the spectra are
