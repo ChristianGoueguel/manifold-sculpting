@@ -33,7 +33,10 @@
 
 - New
   [`vignette("spectroscopy")`](https://christiangoueguel.com/manifold-sculpting/articles/spectroscopy.md)
-  applies Manifold Sculpting to the NIR spectra of meat of the modeldata
-  package, with the tidyverse and tidymodels: it unfolds the arch of the
-  PCA scores, and compares principal component regression with
-  regression on the embedding for the prediction of protein.
+  explores the NIR spectra of meat of the modeldata package with
+  Manifold Sculpting, the tidyverse and tidymodels: a two-dimensional
+  embedding shows that the arch of the PCA scores is a genuine curve of
+  the spectra, a one-dimensional embedding unfolds it into a coordinate
+  along the gradient of fat, and a short comparison with principal
+  component regression shows that unfolding does not help to predict
+  protein.

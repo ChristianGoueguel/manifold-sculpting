@@ -26,7 +26,7 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/comparison.html">Comparison with other nonlinear dimensionality reduction methods</a></li>
-    <li><a class="dropdown-item" href="../articles/spectroscopy.html">Near-infrared spectra of meat</a></li>
+    <li><a class="dropdown-item" href="../articles/spectroscopy.html">Unfolding the arch in NIR spectra of meat</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -51,7 +51,7 @@
 <li><p><code><a href="../reference/step_manifold_sculpting.html">step_manifold_sculpting()</a></code> is a recipes step, with the tuning parameters <code>num_comp</code>, <code>neighbors</code> and <code><a href="../reference/squishing_rate.html">squishing_rate()</a></code>.</p></li>
 <li><p><code><a href="../reference/sim_manifolds.html">sim_swiss_roll()</a></code> and <code><a href="../reference/sim_manifolds.html">sim_s_curve()</a></code> simulate the test manifolds of the paper.</p></li>
 <li><p>New <code><a href="../articles/comparison.html">vignette("comparison")</a></code> compares Manifold Sculpting with Isomap, LLE, t-SNE, UMAP, nonlinear PCA and kernel PCA. It is precomputed, from <code>vignettes/comparison.Rmd.orig</code>, by <code>vignettes/precompute.R</code>.</p></li>
-<li><p>New <code><a href="../articles/spectroscopy.html">vignette("spectroscopy")</a></code> applies Manifold Sculpting to the NIR spectra of meat of the modeldata package, with the tidyverse and tidymodels: it unfolds the arch of the PCA scores, and compares principal component regression with regression on the embedding for the prediction of protein.</p></li>
+<li><p>New <code><a href="../articles/spectroscopy.html">vignette("spectroscopy")</a></code> explores the NIR spectra of meat of the modeldata package with Manifold Sculpting, the tidyverse and tidymodels: a two-dimensional embedding shows that the arch of the PCA scores is a genuine curve of the spectra, a one-dimensional embedding unfolds it into a coordinate along the gradient of fat, and a short comparison with principal component regression shows that unfolding does not help to predict protein.</p></li>
 </ul></div>
   </main></div>
 
