@@ -98,9 +98,9 @@ some of the computations take several minutes (see <a href="#reproducibility">Re
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tune.tidymodels.org/" class="external-link">tune</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/yardstick" class="external-link">yardstick</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/get_theme.html" class="external-link">theme_set</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">blues</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"#00BFFF"</span>, <span class="st">"#0d366b"</span><span class="op">)</span></span>
-<span><span class="va">fat_colours</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_colour_gradient</a></span><span class="op">(</span>low <span class="op">=</span> <span class="va">blues</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, high <span class="op">=</span> <span class="va">blues</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, name <span class="op">=</span> <span class="st">"Fat (%)"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/get_theme.html" class="external-link">theme_set</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">blues</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"#9ecae1"</span>, <span class="st">"#6baed6"</span>, <span class="st">"#3182bd"</span>, <span class="st">"#08519c"</span>, <span class="st">"#08306b"</span><span class="op">)</span></span>
+<span><span class="va">fat_colours</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_colour_gradientn</a></span><span class="op">(</span>colours <span class="op">=</span> <span class="va">blues</span>, name <span class="op">=</span> <span class="st">"Fat (%)"</span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="the-data">The data<a class="anchor" aria-label="anchor" href="#the-data"></a>
 </h2>
@@ -111,27 +111,112 @@ wavelengths from 850 to 1050 nm, and their water, fat and protein
 contents (%).</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">meats</span>, package <span class="op">=</span> <span class="st">"modeldata"</span><span class="op">)</span></span>
-<span><span class="va">meats</span></span>
-<span><span class="co">#&gt; # A tibble: 215 × 103</span></span>
-<span><span class="co">#&gt;    x_001 x_002 x_003 x_004 x_005 x_006 x_007 x_008 x_009 x_010 x_011 x_012 x_013</span></span>
-<span><span class="co">#&gt;    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt;  1  2.62  2.62  2.62  2.62  2.62  2.62  2.62  2.62  2.63  2.63  2.63  2.63  2.64</span></span>
-<span><span class="co">#&gt;  2  2.83  2.84  2.84  2.85  2.85  2.86  2.86  2.87  2.87  2.88  2.88  2.89  2.90</span></span>
-<span><span class="co">#&gt;  3  2.58  2.58  2.59  2.59  2.59  2.59  2.59  2.60  2.60  2.60  2.60  2.61  2.61</span></span>
-<span><span class="co">#&gt;  4  2.82  2.82  2.83  2.83  2.83  2.83  2.83  2.84  2.84  2.84  2.84  2.85  2.85</span></span>
-<span><span class="co">#&gt;  5  2.79  2.79  2.79  2.79  2.80  2.80  2.80  2.80  2.81  2.81  2.81  2.82  2.82</span></span>
-<span><span class="co">#&gt;  6  3.01  3.02  3.02  3.03  3.03  3.04  3.04  3.05  3.06  3.06  3.07  3.08  3.09</span></span>
-<span><span class="co">#&gt;  7  2.99  2.99  3.00  3.01  3.01  3.02  3.02  3.03  3.04  3.04  3.05  3.06  3.07</span></span>
-<span><span class="co">#&gt;  8  2.53  2.53  2.53  2.53  2.53  2.53  2.53  2.53  2.54  2.54  2.54  2.54  2.54</span></span>
-<span><span class="co">#&gt;  9  3.27  3.28  3.29  3.29  3.30  3.31  3.31  3.32  3.33  3.33  3.34  3.35  3.36</span></span>
-<span><span class="co">#&gt; 10  3.40  3.41  3.41  3.42  3.43  3.43  3.44  3.45  3.46  3.47  3.48  3.48  3.49</span></span>
-<span><span class="co">#&gt; # ℹ 205 more rows</span></span>
-<span><span class="co">#&gt; # ℹ 90 more variables: x_014 &lt;dbl&gt;, x_015 &lt;dbl&gt;, x_016 &lt;dbl&gt;, x_017 &lt;dbl&gt;,</span></span>
-<span><span class="co">#&gt; #   x_018 &lt;dbl&gt;, x_019 &lt;dbl&gt;, x_020 &lt;dbl&gt;, x_021 &lt;dbl&gt;, x_022 &lt;dbl&gt;,</span></span>
-<span><span class="co">#&gt; #   x_023 &lt;dbl&gt;, x_024 &lt;dbl&gt;, x_025 &lt;dbl&gt;, x_026 &lt;dbl&gt;, x_027 &lt;dbl&gt;,</span></span>
-<span><span class="co">#&gt; #   x_028 &lt;dbl&gt;, x_029 &lt;dbl&gt;, x_030 &lt;dbl&gt;, x_031 &lt;dbl&gt;, x_032 &lt;dbl&gt;,</span></span>
-<span><span class="co">#&gt; #   x_033 &lt;dbl&gt;, x_034 &lt;dbl&gt;, x_035 &lt;dbl&gt;, x_036 &lt;dbl&gt;, x_037 &lt;dbl&gt;,</span></span>
-<span><span class="co">#&gt; #   x_038 &lt;dbl&gt;, x_039 &lt;dbl&gt;, x_040 &lt;dbl&gt;, x_041 &lt;dbl&gt;, x_042 &lt;dbl&gt;, …</span></span></code></pre></div>
+<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">meats</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Rows: 215</span></span>
+<span><span class="co">#&gt; Columns: 103</span></span>
+<span><span class="co">#&gt; $ x_001   &lt;dbl&gt; 2.61776, 2.83454, 2.58284, 2.82286, 2.78813, 3.00993, 2.98893,…</span></span>
+<span><span class="co">#&gt; $ x_002   &lt;dbl&gt; 2.61814, 2.83871, 2.58458, 2.82460, 2.78989, 3.01540, 2.99435,…</span></span>
+<span><span class="co">#&gt; $ x_003   &lt;dbl&gt; 2.61859, 2.84283, 2.58629, 2.82630, 2.79167, 3.02086, 2.99980,…</span></span>
+<span><span class="co">#&gt; $ x_004   &lt;dbl&gt; 2.61912, 2.84705, 2.58808, 2.82814, 2.79350, 3.02634, 3.00540,…</span></span>
+<span><span class="co">#&gt; $ x_005   &lt;dbl&gt; 2.61981, 2.85138, 2.58996, 2.83001, 2.79538, 3.03190, 3.01117,…</span></span>
+<span><span class="co">#&gt; $ x_006   &lt;dbl&gt; 2.62071, 2.85587, 2.59192, 2.83192, 2.79746, 3.03756, 3.01716,…</span></span>
+<span><span class="co">#&gt; $ x_007   &lt;dbl&gt; 2.62186, 2.86060, 2.59401, 2.83392, 2.79984, 3.04341, 3.02347,…</span></span>
+<span><span class="co">#&gt; $ x_008   &lt;dbl&gt; 2.62334, 2.86566, 2.59627, 2.83606, 2.80254, 3.04955, 3.03014,…</span></span>
+<span><span class="co">#&gt; $ x_009   &lt;dbl&gt; 2.62511, 2.87093, 2.59873, 2.83842, 2.80553, 3.05599, 3.03708,…</span></span>
+<span><span class="co">#&gt; $ x_010   &lt;dbl&gt; 2.62722, 2.87661, 2.60131, 2.84097, 2.80890, 3.06274, 3.04445,…</span></span>
+<span><span class="co">#&gt; $ x_011   &lt;dbl&gt; 2.62964, 2.88264, 2.60414, 2.84374, 2.81272, 3.06982, 3.05213,…</span></span>
+<span><span class="co">#&gt; $ x_012   &lt;dbl&gt; 2.63245, 2.88898, 2.60714, 2.84664, 2.81704, 3.07724, 3.06032,…</span></span>
+<span><span class="co">#&gt; $ x_013   &lt;dbl&gt; 2.63565, 2.89577, 2.61029, 2.84975, 2.82184, 3.08511, 3.06905,…</span></span>
+<span><span class="co">#&gt; $ x_014   &lt;dbl&gt; 2.63933, 2.90308, 2.61361, 2.85307, 2.82710, 3.09343, 3.07841,…</span></span>
+<span><span class="co">#&gt; $ x_015   &lt;dbl&gt; 2.64353, 2.91097, 2.61714, 2.85661, 2.83294, 3.10231, 3.08846,…</span></span>
+<span><span class="co">#&gt; $ x_016   &lt;dbl&gt; 2.64825, 2.91953, 2.62089, 2.86038, 2.83945, 3.11185, 3.09918,…</span></span>
+<span><span class="co">#&gt; $ x_017   &lt;dbl&gt; 2.65350, 2.92873, 2.62486, 2.86437, 2.84664, 3.12205, 3.11059,…</span></span>
+<span><span class="co">#&gt; $ x_018   &lt;dbl&gt; 2.65937, 2.93863, 2.62909, 2.86860, 2.85458, 3.13294, 3.12265,…</span></span>
+<span><span class="co">#&gt; $ x_019   &lt;dbl&gt; 2.66585, 2.94929, 2.63361, 2.87308, 2.86331, 3.14457, 3.13566,…</span></span>
+<span><span class="co">#&gt; $ x_020   &lt;dbl&gt; 2.67281, 2.96072, 2.63835, 2.87789, 2.87280, 3.15703, 3.14936,…</span></span>
+<span><span class="co">#&gt; $ x_021   &lt;dbl&gt; 2.68008, 2.97272, 2.64330, 2.88301, 2.88291, 3.17038, 3.16331,…</span></span>
+<span><span class="co">#&gt; $ x_022   &lt;dbl&gt; 2.68733, 2.98493, 2.64838, 2.88832, 2.89335, 3.18429, 3.17695,…</span></span>
+<span><span class="co">#&gt; $ x_023   &lt;dbl&gt; 2.69427, 2.99690, 2.65354, 2.89374, 2.90374, 3.19840, 3.19001,…</span></span>
+<span><span class="co">#&gt; $ x_024   &lt;dbl&gt; 2.70073, 3.00833, 2.65870, 2.89917, 2.91371, 3.21225, 3.20256,…</span></span>
+<span><span class="co">#&gt; $ x_025   &lt;dbl&gt; 2.70684, 3.01920, 2.66375, 2.90457, 2.92305, 3.22552, 3.21496,…</span></span>
+<span><span class="co">#&gt; $ x_026   &lt;dbl&gt; 2.71281, 3.02990, 2.66880, 2.90991, 2.93187, 3.23827, 3.22788,…</span></span>
+<span><span class="co">#&gt; $ x_027   &lt;dbl&gt; 2.71914, 3.04101, 2.67383, 2.91521, 2.94060, 3.25084, 3.24197,…</span></span>
+<span><span class="co">#&gt; $ x_028   &lt;dbl&gt; 2.72628, 3.05345, 2.67892, 2.92043, 2.94986, 3.26393, 3.25812,…</span></span>
+<span><span class="co">#&gt; $ x_029   &lt;dbl&gt; 2.73462, 3.06777, 2.68411, 2.92565, 2.96035, 3.27851, 3.27652,…</span></span>
+<span><span class="co">#&gt; $ x_030   &lt;dbl&gt; 2.74416, 3.08416, 2.68937, 2.93082, 2.97241, 3.29514, 3.29661,…</span></span>
+<span><span class="co">#&gt; $ x_031   &lt;dbl&gt; 2.75466, 3.10221, 2.69470, 2.93604, 2.98606, 3.31401, 3.31746,…</span></span>
+<span><span class="co">#&gt; $ x_032   &lt;dbl&gt; 2.76568, 3.12106, 2.70012, 2.94128, 3.00097, 3.33458, 3.33822,…</span></span>
+<span><span class="co">#&gt; $ x_033   &lt;dbl&gt; 2.77679, 3.13983, 2.70563, 2.94658, 3.01652, 3.35591, 3.35857,…</span></span>
+<span><span class="co">#&gt; $ x_034   &lt;dbl&gt; 2.78790, 3.15810, 2.71141, 2.95202, 3.03220, 3.37709, 3.37882,…</span></span>
+<span><span class="co">#&gt; $ x_035   &lt;dbl&gt; 2.79949, 3.17623, 2.71775, 2.95777, 3.04793, 3.39772, 3.39971,…</span></span>
+<span><span class="co">#&gt; $ x_036   &lt;dbl&gt; 2.81225, 3.19519, 2.72490, 2.96419, 3.06413, 3.41828, 3.42189,…</span></span>
+<span><span class="co">#&gt; $ x_037   &lt;dbl&gt; 2.82706, 3.21584, 2.73344, 2.97159, 3.08153, 3.43974, 3.44511,…</span></span>
+<span><span class="co">#&gt; $ x_038   &lt;dbl&gt; 2.84356, 3.23747, 2.74327, 2.98045, 3.10078, 3.46266, 3.46814,…</span></span>
+<span><span class="co">#&gt; $ x_039   &lt;dbl&gt; 2.86106, 3.25889, 2.75433, 2.99090, 3.12185, 3.48663, 3.48887,…</span></span>
+<span><span class="co">#&gt; $ x_040   &lt;dbl&gt; 2.87857, 3.27835, 2.76642, 3.00284, 3.14371, 3.51002, 3.50519,…</span></span>
+<span><span class="co">#&gt; $ x_041   &lt;dbl&gt; 2.89497, 3.29384, 2.77931, 3.01611, 3.16510, 3.53087, 3.51543,…</span></span>
+<span><span class="co">#&gt; $ x_042   &lt;dbl&gt; 2.90924, 3.30362, 2.79272, 3.03048, 3.18470, 3.54711, 3.51885,…</span></span>
+<span><span class="co">#&gt; $ x_043   &lt;dbl&gt; 2.92085, 3.30681, 2.80649, 3.04579, 3.20140, 3.55699, 3.51619,…</span></span>
+<span><span class="co">#&gt; $ x_044   &lt;dbl&gt; 2.93015, 3.30393, 2.82064, 3.06194, 3.21477, 3.55986, 3.50972,…</span></span>
+<span><span class="co">#&gt; $ x_045   &lt;dbl&gt; 2.93846, 3.29700, 2.83541, 3.07889, 3.22544, 3.55656, 3.50259,…</span></span>
+<span><span class="co">#&gt; $ x_046   &lt;dbl&gt; 2.94771, 3.28925, 2.85121, 3.09686, 3.23505, 3.54937, 3.49802,…</span></span>
+<span><span class="co">#&gt; $ x_047   &lt;dbl&gt; 2.96019, 3.28409, 2.86872, 3.11629, 3.24586, 3.54169, 3.49875,…</span></span>
+<span><span class="co">#&gt; $ x_048   &lt;dbl&gt; 2.97831, 3.28505, 2.88905, 3.13775, 3.26027, 3.53692, 3.50653,…</span></span>
+<span><span class="co">#&gt; $ x_049   &lt;dbl&gt; 3.00306, 3.29326, 2.91289, 3.16217, 3.28063, 3.53823, 3.52275,…</span></span>
+<span><span class="co">#&gt; $ x_050   &lt;dbl&gt; 3.03506, 3.30923, 2.94088, 3.19068, 3.30889, 3.54760, 3.54677,…</span></span>
+<span><span class="co">#&gt; $ x_051   &lt;dbl&gt; 3.07428, 3.33267, 2.97325, 3.22376, 3.34543, 3.56512, 3.57737,…</span></span>
+<span><span class="co">#&gt; $ x_052   &lt;dbl&gt; 3.11963, 3.36251, 3.00946, 3.26172, 3.39019, 3.59043, 3.61244,…</span></span>
+<span><span class="co">#&gt; $ x_053   &lt;dbl&gt; 3.16868, 3.39661, 3.04780, 3.30379, 3.44198, 3.62229, 3.64869,…</span></span>
+<span><span class="co">#&gt; $ x_054   &lt;dbl&gt; 3.21771, 3.43188, 3.08554, 3.34793, 3.49800, 3.65830, 3.68262,…</span></span>
+<span><span class="co">#&gt; $ x_055   &lt;dbl&gt; 3.26254, 3.46492, 3.11947, 3.39093, 3.55407, 3.69515, 3.71139,…</span></span>
+<span><span class="co">#&gt; $ x_056   &lt;dbl&gt; 3.29988, 3.49295, 3.14696, 3.42920, 3.60534, 3.72932, 3.73360,…</span></span>
+<span><span class="co">#&gt; $ x_057   &lt;dbl&gt; 3.32847, 3.51458, 3.16677, 3.45998, 3.64789, 3.75803, 3.74947,…</span></span>
+<span><span class="co">#&gt; $ x_058   &lt;dbl&gt; 3.34899, 3.53004, 3.17938, 3.48227, 3.68011, 3.78003, 3.76022,…</span></span>
+<span><span class="co">#&gt; $ x_059   &lt;dbl&gt; 3.36342, 3.54067, 3.18631, 3.49687, 3.70272, 3.79560, 3.76731,…</span></span>
+<span><span class="co">#&gt; $ x_060   &lt;dbl&gt; 3.37379, 3.54797, 3.18924, 3.50558, 3.71815, 3.80614, 3.77206,…</span></span>
+<span><span class="co">#&gt; $ x_061   &lt;dbl&gt; 3.38152, 3.55306, 3.18950, 3.51026, 3.72863, 3.81313, 3.77511,…</span></span>
+<span><span class="co">#&gt; $ x_062   &lt;dbl&gt; 3.38741, 3.55675, 3.18801, 3.51221, 3.73574, 3.81774, 3.77666,…</span></span>
+<span><span class="co">#&gt; $ x_063   &lt;dbl&gt; 3.39164, 3.55921, 3.18498, 3.51215, 3.74059, 3.82079, 3.77696,…</span></span>
+<span><span class="co">#&gt; $ x_064   &lt;dbl&gt; 3.39418, 3.56045, 3.18039, 3.51036, 3.74357, 3.82258, 3.77594,…</span></span>
+<span><span class="co">#&gt; $ x_065   &lt;dbl&gt; 3.39490, 3.56034, 3.17411, 3.50682, 3.74453, 3.82301, 3.77346,…</span></span>
+<span><span class="co">#&gt; $ x_066   &lt;dbl&gt; 3.39366, 3.55876, 3.16611, 3.50140, 3.74336, 3.82206, 3.76953,…</span></span>
+<span><span class="co">#&gt; $ x_067   &lt;dbl&gt; 3.39045, 3.55571, 3.15641, 3.49398, 3.73991, 3.81959, 3.76426,…</span></span>
+<span><span class="co">#&gt; $ x_068   &lt;dbl&gt; 3.38541, 3.55132, 3.14512, 3.48457, 3.73418, 3.81557, 3.75787,…</span></span>
+<span><span class="co">#&gt; $ x_069   &lt;dbl&gt; 3.37869, 3.54585, 3.13241, 3.47333, 3.72638, 3.81021, 3.75055,…</span></span>
+<span><span class="co">#&gt; $ x_070   &lt;dbl&gt; 3.37041, 3.53950, 3.11843, 3.46041, 3.71676, 3.80375, 3.74243,…</span></span>
+<span><span class="co">#&gt; $ x_071   &lt;dbl&gt; 3.36073, 3.53235, 3.10329, 3.44595, 3.70553, 3.79642, 3.73368,…</span></span>
+<span><span class="co">#&gt; $ x_072   &lt;dbl&gt; 3.34979, 3.52442, 3.08714, 3.43005, 3.69289, 3.78835, 3.72442,…</span></span>
+<span><span class="co">#&gt; $ x_073   &lt;dbl&gt; 3.33769, 3.51583, 3.07014, 3.41285, 3.67900, 3.77958, 3.71475,…</span></span>
+<span><span class="co">#&gt; $ x_074   &lt;dbl&gt; 3.32443, 3.50668, 3.05237, 3.39450, 3.66396, 3.77024, 3.70463,…</span></span>
+<span><span class="co">#&gt; $ x_075   &lt;dbl&gt; 3.31013, 3.49700, 3.03393, 3.37511, 3.64785, 3.76040, 3.69406,…</span></span>
+<span><span class="co">#&gt; $ x_076   &lt;dbl&gt; 3.29487, 3.48683, 3.01504, 3.35482, 3.63085, 3.75005, 3.68318,…</span></span>
+<span><span class="co">#&gt; $ x_077   &lt;dbl&gt; 3.27891, 3.47626, 2.99569, 3.33376, 3.61305, 3.73929, 3.67229,…</span></span>
+<span><span class="co">#&gt; $ x_078   &lt;dbl&gt; 3.26232, 3.46552, 2.97612, 3.31204, 3.59463, 3.72831, 3.66175,…</span></span>
+<span><span class="co">#&gt; $ x_079   &lt;dbl&gt; 3.24542, 3.45501, 2.95642, 3.28986, 3.57582, 3.71738, 3.65160,…</span></span>
+<span><span class="co">#&gt; $ x_080   &lt;dbl&gt; 3.22828, 3.44481, 2.93660, 3.26730, 3.55695, 3.70681, 3.64173,…</span></span>
+<span><span class="co">#&gt; $ x_081   &lt;dbl&gt; 3.21080, 3.43477, 2.91667, 3.24442, 3.53796, 3.69664, 3.63191,…</span></span>
+<span><span class="co">#&gt; $ x_082   &lt;dbl&gt; 3.19287, 3.42465, 2.89655, 3.22117, 3.51880, 3.68659, 3.62177,…</span></span>
+<span><span class="co">#&gt; $ x_083   &lt;dbl&gt; 3.17433, 3.41419, 2.87622, 3.19757, 3.49936, 3.67649, 3.61102,…</span></span>
+<span><span class="co">#&gt; $ x_084   &lt;dbl&gt; 3.15503, 3.40303, 2.85563, 3.17357, 3.47938, 3.66611, 3.59929,…</span></span>
+<span><span class="co">#&gt; $ x_085   &lt;dbl&gt; 3.13475, 3.39082, 2.83474, 3.14915, 3.45869, 3.65503, 3.58642,…</span></span>
+<span><span class="co">#&gt; $ x_086   &lt;dbl&gt; 3.11339, 3.37731, 2.81361, 3.12429, 3.43711, 3.64283, 3.57249,…</span></span>
+<span><span class="co">#&gt; $ x_087   &lt;dbl&gt; 3.09116, 3.36265, 2.79235, 3.09908, 3.41458, 3.62938, 3.55803,…</span></span>
+<span><span class="co">#&gt; $ x_088   &lt;dbl&gt; 3.06850, 3.34745, 2.77113, 3.07366, 3.39129, 3.61483, 3.54375,…</span></span>
+<span><span class="co">#&gt; $ x_089   &lt;dbl&gt; 3.04596, 3.33245, 2.75015, 3.04825, 3.36772, 3.59990, 3.53017,…</span></span>
+<span><span class="co">#&gt; $ x_090   &lt;dbl&gt; 3.02393, 3.31818, 2.72956, 3.02308, 3.34450, 3.58535, 3.51747,…</span></span>
+<span><span class="co">#&gt; $ x_091   &lt;dbl&gt; 3.00247, 3.30473, 2.70934, 2.99820, 3.32201, 3.57163, 3.50544,…</span></span>
+<span><span class="co">#&gt; $ x_092   &lt;dbl&gt; 2.98145, 3.29186, 2.68951, 2.97367, 3.30025, 3.55877, 3.49372,…</span></span>
+<span><span class="co">#&gt; $ x_093   &lt;dbl&gt; 2.96072, 3.27921, 2.67009, 2.94951, 3.27907, 3.54651, 3.48197,…</span></span>
+<span><span class="co">#&gt; $ x_094   &lt;dbl&gt; 2.94013, 3.26655, 2.65112, 2.92576, 3.25831, 3.53442, 3.46996,…</span></span>
+<span><span class="co">#&gt; $ x_095   &lt;dbl&gt; 2.91978, 3.25369, 2.63262, 2.90251, 3.23784, 3.52221, 3.45756,…</span></span>
+<span><span class="co">#&gt; $ x_096   &lt;dbl&gt; 2.89966, 3.24045, 2.61461, 2.87988, 3.21765, 3.50972, 3.44456,…</span></span>
+<span><span class="co">#&gt; $ x_097   &lt;dbl&gt; 2.87964, 3.22659, 2.59718, 2.85794, 3.19766, 3.49682, 3.43070,…</span></span>
+<span><span class="co">#&gt; $ x_098   &lt;dbl&gt; 2.85960, 3.21181, 2.58034, 2.83672, 3.17770, 3.48325, 3.41583,…</span></span>
+<span><span class="co">#&gt; $ x_099   &lt;dbl&gt; 2.83940, 3.19600, 2.56404, 2.81617, 3.15770, 3.46870, 3.40018,…</span></span>
+<span><span class="co">#&gt; $ x_100   &lt;dbl&gt; 2.81920, 3.17942, 2.54816, 2.79622, 3.13753, 3.45307, 3.38415,…</span></span>
+<span><span class="co">#&gt; $ water   &lt;dbl&gt; 60.50, 46.00, 71.00, 72.80, 58.30, 44.00, 44.00, 69.30, 61.40,…</span></span>
+<span><span class="co">#&gt; $ fat     &lt;dbl&gt; 22.5, 40.1, 8.4, 5.9, 25.5, 42.7, 42.7, 10.6, 19.9, 19.9, 46.0…</span></span>
+<span><span class="co">#&gt; $ protein &lt;dbl&gt; 16.7, 13.5, 20.5, 20.7, 15.5, 13.7, 13.7, 19.3, 17.7, 17.7, 12…</span></span></code></pre></div>
 <p>In long format, with one row per sample and wavelength, the spectra
 are easy to transform and to plot:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -140,8 +225,8 @@ are easy to transform and to plot:</p>
 <span><span class="va">spectra</span> <span class="op">&lt;-</span> <span class="va">meats</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>sample <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/row_number.html" class="external-link">row_number</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html" class="external-link">pivot_longer</a></span><span class="op">(</span></span>
-<span>    <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"x_"</span><span class="op">)</span>, </span>
-<span>    names_to <span class="op">=</span> <span class="st">"channel"</span>, </span>
+<span>    <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"x_"</span><span class="op">)</span>,</span>
+<span>    names_to <span class="op">=</span> <span class="st">"channel"</span>,</span>
 <span>    values_to <span class="op">=</span> <span class="st">"absorbance"</span></span>
 <span>    <span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>wavelength <span class="op">=</span> <span class="va">wavelengths</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"x_"</span>, <span class="st">""</span>, <span class="va">channel</span><span class="op">)</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
@@ -180,7 +265,7 @@ the most, from 1% to 49%, and water and protein decrease as it increases
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">meats</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">fat</span>, <span class="va">protein</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">1.5</span>, colour <span class="op">=</span> <span class="va">blues</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, alpha <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">1.5</span>, colour <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">last</a></span><span class="op">(</span><span class="va">blues</span><span class="op">)</span>, alpha <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Fat (%)"</span>, y <span class="op">=</span> <span class="st">"Protein (%)"</span><span class="op">)</span></span></code></pre></div>
 <div class="float">
 <img src="spectroscopy-fig-composition-1.png" alt="Protein and fat contents of the samples."><div class="figcaption">Protein and fat contents of the samples.</div>
@@ -283,8 +368,8 @@ neighbors here), with the best of three runs:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ms_snv</span> <span class="op">&lt;-</span> <span class="fu">base_recipe</span><span class="op">(</span><span class="va">meats_snv</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/step_manifold_sculpting.html">step_manifold_sculpting</a></span><span class="op">(</span></span>
-<span>    <span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html" class="external-link">all_predictors</a></span><span class="op">(</span><span class="op">)</span>, </span>
-<span>    num_comp <span class="op">=</span> <span class="fl">2</span>, </span>
+<span>    <span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html" class="external-link">all_predictors</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    num_comp <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>    neighbors <span class="op">=</span> <span class="fl">20</span>,</span>
 <span>    options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>nstart <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>,</span>
 <span>    seed <span class="op">=</span> <span class="fl">1</span></span>
@@ -391,7 +476,7 @@ directly from the matrix of SNV spectra:</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>MS <span class="op">=</span> <span class="fu">along_fat</span><span class="op">(</span><span class="va">ms_1d</span><span class="op">$</span><span class="va">embedding</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span>, PC1_fat <span class="op">=</span> <span class="fu">along_fat</span><span class="op">(</span><span class="va">PC1</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">coordinates</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">PC1_fat</span>, <span class="va">MS</span>, colour <span class="op">=</span> <span class="va">fat</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">PC1_fat</span>, <span class="va">MS</span>, colour <span class="op">=</span> <span class="va">fat</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="va">fat_colours</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"First principal component"</span>, y <span class="op">=</span> <span class="st">"Manifold Sculpting, 1 dimension"</span><span class="op">)</span></span></code></pre></div>
@@ -428,7 +513,7 @@ composition:</p>
 <span><span class="co">#&gt; 3 protein     0.320                             0.371</span></span></code></pre></div>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">first_dimension</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">dimension</span>, <span class="va">percent</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">1</span>, colour <span class="op">=</span> <span class="va">blues</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, alpha <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">1</span>, colour <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">last</a></span><span class="op">(</span><span class="va">blues</span><span class="op">)</span>, alpha <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html" class="external-link">geom_smooth</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"lm"</span>, formula <span class="op">=</span> <span class="va">y</span> <span class="op">~</span> <span class="va">x</span>, se <span class="op">=</span> <span class="cn">FALSE</span>, colour <span class="op">=</span> <span class="st">"#eb6834"</span>, linewidth <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_grid.html" class="external-link">facet_grid</a></span><span class="op">(</span><span class="va">constituent</span> <span class="op">~</span> <span class="va">method</span>, scales <span class="op">=</span> <span class="st">"free"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="cn">NULL</span>, y <span class="op">=</span> <span class="st">"Content (%)"</span><span class="op">)</span></span></code></pre></div>
@@ -456,14 +541,14 @@ neighbors:</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span>  <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/manifold_sculpting.html">manifold_sculpting</a></span><span class="op">(</span><span class="va">snv</span>, ndim <span class="op">=</span> <span class="fl">1</span>, neighbors <span class="op">=</span> <span class="va">k</span>, nstart <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
-<span>    neighbors <span class="op">=</span> <span class="va">k</span>, </span>
+<span>    neighbors <span class="op">=</span> <span class="va">k</span>,</span>
 <span>    sample <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">snv</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>    MS <span class="op">=</span> <span class="fu">along_fat</span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">embedding</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">}</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span></span>
-<span>    <span class="va">coordinates</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>sample <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/row_number.html" class="external-link">row_number</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>, </span>
+<span>    <span class="va">coordinates</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>sample <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/row_number.html" class="external-link">row_number</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>    by <span class="op">=</span> <span class="st">"sample"</span>,</span>
 <span>    suffix <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">""</span>, <span class="st">"_20"</span><span class="op">)</span></span>
 <span>    <span class="op">)</span></span>
@@ -577,21 +662,21 @@ by 10-fold cross-validation, with 20 neighbors as above and with 60:</p>
 <span><span class="va">ms_wflow</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://workflows.tidymodels.org/reference/workflow.html" class="external-link">workflow</a></span><span class="op">(</span></span>
 <span>  <span class="fu">base_recipe</span><span class="op">(</span><span class="va">meats_snv</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="../reference/step_manifold_sculpting.html">step_manifold_sculpting</a></span><span class="op">(</span></span>
-<span>      <span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html" class="external-link">all_predictors</a></span><span class="op">(</span><span class="op">)</span>, </span>
-<span>      num_comp <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html" class="external-link">tune</a></span><span class="op">(</span><span class="op">)</span>, </span>
+<span>      <span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html" class="external-link">all_predictors</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>      num_comp <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html" class="external-link">tune</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>      neighbors <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html" class="external-link">tune</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>      options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>nstart <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
 <span>  <span class="fu"><a href="https://parsnip.tidymodels.org/reference/linear_reg.html" class="external-link">linear_reg</a></span><span class="op">(</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="va">pca_cv</span> <span class="op">&lt;-</span> <span class="fu">tune_grid</span><span class="op">(</span></span>
-<span>  <span class="va">pca_wflow</span>, </span>
-<span>  resamples <span class="op">=</span> <span class="va">folds</span>, </span>
+<span>  <span class="va">pca_wflow</span>,</span>
+<span>  resamples <span class="op">=</span> <span class="va">folds</span>,</span>
 <span>  grid <span class="op">=</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>num_comp <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span>, metrics <span class="op">=</span> <span class="fu">metric_set</span><span class="op">(</span><span class="va">rmse</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="va">ms_cv</span> <span class="op">&lt;-</span> <span class="fu">tune_grid</span><span class="op">(</span></span>
-<span>  <span class="va">ms_wflow</span>, </span>
+<span>  <span class="va">ms_wflow</span>,</span>
 <span>  resamples <span class="op">=</span> <span class="va">folds</span>,</span>
 <span>  grid <span class="op">=</span> <span class="fu"><a href="https://tidyr.tidyverse.org/reference/expand.html" class="external-link">crossing</a></span><span class="op">(</span>num_comp <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, neighbors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">20</span>, <span class="fl">60</span><span class="op">)</span><span class="op">)</span>, metrics <span class="op">=</span> <span class="fu">metric_set</span><span class="op">(</span><span class="va">rmse</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
