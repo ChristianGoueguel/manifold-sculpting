@@ -1,13 +1,13 @@
-# Unfolding the arch in NIR spectra of meat
+# Horseshoe effect: Unfolding the arch in NIR spectra of meat
 
 The principal component scores of near-infrared (NIR) spectra often lie
-on an arch rather than in a cloud: the spectra respond nonlinearly to
-the composition of the samples, and principal component analysis (PCA),
-which is linear, bends the main gradient of composition over two
-components. Manifold Sculpting is a tool to explore such structures.
-This vignette uses it on the NIR spectra of meat to ask what the arch
-is, whether it is a genuine curve of the spectra, and what coordinate
-runs along it, with the tidyverse and tidymodels packages.
+on an arch (i.e., horseshoe effect) rather than in a cloud: the spectra
+respond nonlinearly to the composition of the samples, and principal
+component analysis (PCA), which is linear, bends the main gradient of
+composition over two components. Manifold Sculpting is a tool to explore
+such structures. This vignette uses it on the NIR spectra of meat to ask
+what the arch is, whether it is a genuine curve of the spectra, and what
+coordinate runs along it.
 
 The results were computed once, with the code shown here, because some
 of the computations take several minutes (see
@@ -26,7 +26,7 @@ library(tune)
 library(yardstick)
 
 theme_set(theme_minimal(base_size = 10))
-blues <- c("#86b6ef", "#0d366b")
+blues <- c("#00BFFF", "#0d366b")
 fat_colours <- scale_colour_gradient(low = blues[1], high = blues[2], name = "Fat (%)")
 ```
 
@@ -72,7 +72,11 @@ wavelengths <- seq(850, 1050, length.out = 100)
 
 spectra <- meats |>
   mutate(sample = row_number()) |>
-  pivot_longer(starts_with("x_"), names_to = "channel", values_to = "absorbance") |>
+  pivot_longer(
+    starts_with("x_"), 
+    names_to = "channel", 
+    values_to = "absorbance"
+    ) |>
   mutate(wavelength = wavelengths[as.integer(sub("x_", "", channel))])
 
 spectra
@@ -94,7 +98,8 @@ spectra
 
 ``` r
 
-ggplot(spectra, aes(wavelength, absorbance, group = sample, colour = fat)) +
+ggplot(spectra) +
+  aes(wavelength, absorbance, group = sample, colour = fat) +
   geom_line(linewidth = 0.3) +
   fat_colours +
   labs(x = "Wavelength (nm)", y = "Absorbance")
@@ -114,7 +119,8 @@ the most, from 1% to 49%, and water and protein decrease as it increases
 
 ``` r
 
-ggplot(meats, aes(fat, protein)) +
+ggplot(meats) +
+  aes(fat, protein) +
   geom_point(size = 1.5, colour = blues[2], alpha = 0.7) +
   labs(x = "Fat (%)", y = "Protein (%)")
 ```
@@ -145,7 +151,8 @@ meats_snv <- spectra |>
 
 ``` r
 
-ggplot(spectra, aes(wavelength, snv, group = sample, colour = fat)) +
+ggplot(spectra) +
+  aes(wavelength, snv, group = sample, colour = fat) +
   geom_line(linewidth = 0.3) +
   fat_colours +
   labs(x = "Wavelength (nm)", y = "SNV absorbance")
@@ -236,8 +243,13 @@ best of three runs:
 ``` r
 
 ms_snv <- base_recipe(meats_snv) |>
-  step_manifold_sculpting(all_predictors(), num_comp = 2, neighbors = 20,
-                          options = list(nstart = 3), seed = 1) |>
+  step_manifold_sculpting(
+    all_predictors(), 
+    num_comp = 2, 
+    neighbors = 20,
+    options = list(nstart = 3),
+    seed = 1
+    ) |>
   prep()
 
 pca_snv_scores <- bake(pca_snv, new_data = NULL)
@@ -267,8 +279,10 @@ procrustes <- function(x, target) {
   s <- svd(crossprod(x, scale(target, scale = FALSE)))
   x %*% s$u %*% t(s$v)
 }
-rotated <- procrustes(as.matrix(select(ms_scores, MS1, MS2)),
-                      as.matrix(select(pca_snv_scores, PC1, PC2)))
+rotated <- procrustes(
+  as.matrix(select(ms_scores, MS1, MS2)),
+  as.matrix(select(pca_snv_scores, PC1, PC2))
+  )
 
 method_levels <- c("PCA", "Manifold Sculpting", "Manifold Sculpting, rotated")
 bind_rows(
@@ -353,7 +367,8 @@ coordinates <- pca_snv_scores |>
 
 ``` r
 
-ggplot(coordinates, aes(PC1_fat, MS, colour = fat)) +
+ggplot(coordinates) +
+  aes(PC1_fat, MS, colour = fat)
   geom_point(size = 1.5) +
   fat_colours +
   labs(x = "First principal component", y = "Manifold Sculpting, 1 dimension")
@@ -430,12 +445,18 @@ k_values <- c(10, 20, 30, 45)
 stability <- lapply(k_values, function(k) {
   set.seed(1)
   fit <- manifold_sculpting(snv, ndim = 1, neighbors = k, nstart = 3)
-  tibble(neighbors = k, sample = seq_len(nrow(snv)),
-         MS = along_fat(fit$embedding[, 1]))
-}) |>
+  tibble(
+    neighbors = k, 
+    sample = seq_len(nrow(snv)),
+    MS = along_fat(fit$embedding[, 1])
+    )
+  }) |>
   bind_rows() |>
-  left_join(coordinates |> mutate(sample = row_number()), by = "sample",
-            suffix = c("", "_20"))
+  left_join(
+    coordinates |> mutate(sample = row_number()), 
+    by = "sample",
+    suffix = c("", "_20")
+    )
 
 stability_summary <- stability |>
   group_by(neighbors) |>
@@ -557,22 +578,30 @@ set.seed(2026)
 folds <- vfold_cv(meats_snv, v = 10, strata = protein)
 
 pca_wflow <- workflow(
-  base_recipe(meats_snv) |>
-    step_pca(all_predictors(), num_comp = tune()),
+  base_recipe(meats_snv) |> step_pca(all_predictors(), num_comp = tune()),
   linear_reg()
 )
 ms_wflow <- workflow(
   base_recipe(meats_snv) |>
-    step_manifold_sculpting(all_predictors(), num_comp = tune(), neighbors = tune(),
-                            options = list(nstart = 3), seed = 1),
+    step_manifold_sculpting(
+      all_predictors(), 
+      num_comp = tune(), 
+      neighbors = tune(),
+      options = list(nstart = 3), seed = 1),
   linear_reg()
-)
+  )
 
-pca_cv <- tune_grid(pca_wflow, resamples = folds, grid = tibble(num_comp = 1:6),
-                    metrics = metric_set(rmse))
-ms_cv <- tune_grid(ms_wflow, resamples = folds,
-                   grid = crossing(num_comp = 1:6, neighbors = c(20, 60)),
-                   metrics = metric_set(rmse))
+pca_cv <- tune_grid(
+  pca_wflow, 
+  resamples = folds, 
+  grid = tibble(num_comp = 1:6), metrics = metric_set(rmse)
+  )
+
+ms_cv <- tune_grid(
+  ms_wflow, 
+  resamples = folds,
+  grid = crossing(num_comp = 1:6, neighbors = c(20, 60)), metrics = metric_set(rmse)
+  )
 
 cv_results <- bind_rows(
   collect_metrics(pca_cv) |> mutate(model = "PCA"),
