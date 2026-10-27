@@ -172,8 +172,13 @@ normalized first.
 library(recipes)
 
 rec <- recipe(~ x + y + z, data = train) |>
-  step_manifold_sculpting(all_numeric_predictors(), num_comp = 2,
-                          neighbors = 20, options = list(nstart = 3), seed = 1)
+  step_manifold_sculpting(
+    all_numeric_predictors(),
+    num_comp = 2,
+    neighbors = 20,
+    options = list(nstart = 3),
+    seed = 1
+  )
 
 rec_trained <- prep(rec)
 rec_trained
