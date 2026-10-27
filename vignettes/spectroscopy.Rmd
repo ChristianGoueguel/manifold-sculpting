@@ -1,27 +1,27 @@
 ---
-title: "Unfolding the arch in NIR spectra of meat"
+title: "Horseshoe effect: Unfolding the arch in NIR spectra of meat"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Unfolding the arch in NIR spectra of meat}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{Horseshoe effect: Unfolding the arch in NIR spectra of meat}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
+The principal component scores of near-infrared (NIR) spectra often lie
+on an arch (i.e., horseshoe effect) rather than in a cloud: the spectra
+respond nonlinearly to the composition of the samples, and principal
+component analysis (PCA), which is linear, bends the main gradient of
+composition over two components. Manifold Sculpting is a tool to explore
+such structures. This vignette uses it on the NIR spectra of meat to ask
+what the arch is, whether it is a genuine curve of the spectra, and what
+coordinate runs along it.
 
-
-The principal component scores of near-infrared (NIR) spectra often lie on
-an arch rather than in a cloud: the spectra respond nonlinearly to the
-composition of the samples, and principal component analysis (PCA), which
-is linear, bends the main gradient of composition over two components.
-Manifold Sculpting is a tool to explore such structures. This vignette uses
-it on the NIR spectra of meat to ask what the arch is, whether it is a
-genuine curve of the spectra, and what coordinate runs along it, with the
-tidyverse and tidymodels packages.
-
-The results were computed once, with the code shown here, because some of
-the computations take several minutes (see
+The results were computed once, with the code shown here, because some
+of the computations take several minutes (see
 [Reproducibility](#reproducibility)).
-
 
 ``` r
 library(manifoldsculpting) # also attaches recipes
@@ -35,17 +35,16 @@ library(tune)
 library(yardstick)
 
 theme_set(theme_minimal(base_size = 10))
-blues <- c("#86b6ef", "#0d366b")
+blues <- c("#00BFFF", "#0d366b")
 fat_colours <- scale_colour_gradient(low = blues[1], high = blues[2], name = "Fat (%)")
 ```
 
 ## The data
 
 The `meats` data of the modeldata package are the Tecator data set
-(Borggaard and Thodberg, 1992): 215 samples of finely chopped meat,
-with their absorbance spectra measured by transmission at 100 wavelengths
+(Borggaard and Thodberg, 1992): 215 samples of finely chopped meat, with
+their absorbance spectra measured by transmission at 100 wavelengths
 from 850 to 1050 nm, and their water, fat and protein contents (%).
-
 
 ``` r
 data(meats, package = "modeldata")
@@ -75,13 +74,16 @@ meats
 In long format, with one row per sample and wavelength, the spectra are
 easy to transform and to plot:
 
-
 ``` r
 wavelengths <- seq(850, 1050, length.out = 100)
 
 spectra <- meats |>
   mutate(sample = row_number()) |>
-  pivot_longer(starts_with("x_"), names_to = "channel", values_to = "absorbance") |>
+  pivot_longer(
+    starts_with("x_"), 
+    names_to = "channel", 
+    values_to = "absorbance"
+    ) |>
   mutate(wavelength = wavelengths[as.integer(sub("x_", "", channel))])
 
 spectra
@@ -101,40 +103,39 @@ spectra
 #> # ℹ 21,490 more rows
 ```
 
-
 ``` r
-ggplot(spectra, aes(wavelength, absorbance, group = sample, colour = fat)) +
+ggplot(spectra) +
+  aes(wavelength, absorbance, group = sample, colour = fat) +
   geom_line(linewidth = 0.3) +
   fat_colours +
   labs(x = "Wavelength (nm)", y = "Absorbance")
 ```
 
-![NIR spectra of the 215 meat samples, colored by their fat content.](spectroscopy-fig-spectra-1.png)
+![NIR spectra of the 215 meat samples, colored by their fat
+content.](spectroscopy-fig-spectra-1.png)
 
-The spectra differ mostly by vertical offsets, caused by light scattering
-in samples of different texture, which have little to do with their
-composition. The composition itself has only two degrees of freedom,
-since water, fat and protein add up to about 99%. Fat varies the most,
-from 1% to 49%, and water
-and protein decrease as it increases (correlations of
--0.99 and
--0.86).
-
+The spectra differ mostly by vertical offsets, caused by light
+scattering in samples of different texture, which have little to do with
+their composition. The composition itself has only two degrees of
+freedom, since water, fat and protein add up to about 99%. Fat varies
+the most, from 1% to 49%, and water and protein decrease as it increases
+(correlations of -0.99 and -0.86).
 
 ``` r
-ggplot(meats, aes(fat, protein)) +
+ggplot(meats) +
+  aes(fat, protein) +
   geom_point(size = 1.5, colour = blues[2], alpha = 0.7) +
   labs(x = "Fat (%)", y = "Protein (%)")
 ```
 
-![Protein and fat contents of the samples.](spectroscopy-fig-composition-1.png)
+![Protein and fat contents of the
+samples.](spectroscopy-fig-composition-1.png)
 
 ## Scatter correction
 
 The standard normal variate (SNV) transformation (Barnes et al., 1989)
 removes most of the scatter: each spectrum is centered and scaled by its
 own mean and standard deviation.
-
 
 ``` r
 spectra <- spectra |>
@@ -148,9 +149,9 @@ meats_snv <- spectra |>
   select(-sample)
 ```
 
-
 ``` r
-ggplot(spectra, aes(wavelength, snv, group = sample, colour = fat)) +
+ggplot(spectra) +
+  aes(wavelength, snv, group = sample, colour = fat) +
   geom_line(linewidth = 0.3) +
   fat_colours +
   labs(x = "Wavelength (nm)", y = "SNV absorbance")
@@ -160,9 +161,9 @@ ggplot(spectra, aes(wavelength, snv, group = sample, colour = fat)) +
 
 ## The arch
 
-The recipes share a first step: protein is the outcome, water and fat are
-kept for the plots but are not predictors, and the spectra are centered.
-
+The recipes share a first step: protein is the outcome, water and fat
+are kept for the plots but are not predictors, and the spectra are
+centered.
 
 ``` r
 base_recipe <- function(data) {
@@ -195,7 +196,6 @@ variance
 #> 2 SNV      68.1 29.1   1.63
 ```
 
-
 ``` r
 pca_scores <- bind_rows(
   "Raw spectra" = bake(pca_raw, new_data = NULL),
@@ -209,20 +209,19 @@ ggplot(pca_scores, aes(PC1, PC2, colour = fat)) +
   fat_colours
 ```
 
-![Scores of the first two principal components of the raw and the SNV spectra, colored by fat content.](spectroscopy-fig-arch-1.png)
+![Scores of the first two principal components of the raw and the SNV
+spectra, colored by fat content.](spectroscopy-fig-arch-1.png)
 
-On the raw spectra, the first component is the scatter, with
-98.7% of the variance,
-and the fat contents are mixed up. After the SNV transformation, the
-first two components carry
-68% and
-29% of the variance, and
-the scores lie on an **arch**. Fat runs along it, from the leanest
-samples at the end of the left arm, over the top, to the fattest at the
-end of the right arm. The fat content of a sample is given by its position
-along the arch, and neither component follows it on its own: this is the
-horseshoe effect of ordination methods (Diaconis et al., 2008), where one
-dominant nonlinear gradient is bent over two components.
+On the raw spectra, the first component is the scatter, with 98.7% of
+the variance, and the fat contents are mixed up. After the SNV
+transformation, the first two components carry 68% and 29% of the
+variance, and the scores lie on an **arch**. Fat runs along it, from the
+leanest samples at the end of the left arm, over the top, to the fattest
+at the end of the right arm. The fat content of a sample is given by its
+position along the arch, and neither component follows it on its own:
+this is the horseshoe effect of ordination methods (Diaconis et al.,
+2008), where one dominant nonlinear gradient is bent over two
+components.
 
 ## Two dimensions keep the arch
 
@@ -230,11 +229,15 @@ dominant nonlinear gradient is bent over two components.
 looks for coordinates that preserve the distances and angles between
 neighboring spectra (20 neighbors here), with the best of three runs:
 
-
 ``` r
 ms_snv <- base_recipe(meats_snv) |>
-  step_manifold_sculpting(all_predictors(), num_comp = 2, neighbors = 20,
-                          options = list(nstart = 3), seed = 1) |>
+  step_manifold_sculpting(
+    all_predictors(), 
+    num_comp = 2, 
+    neighbors = 20,
+    options = list(nstart = 3),
+    seed = 1
+    ) |>
   prep()
 
 pca_snv_scores <- bake(pca_snv, new_data = NULL)
@@ -256,7 +259,6 @@ ms_scores |> select(MS1, MS2, water, fat, protein)
 #> # ℹ 205 more rows
 ```
 
-
 ``` r
 # Rotate (and reflect) a configuration onto a target, by Procrustes analysis
 procrustes <- function(x, target) {
@@ -264,8 +266,10 @@ procrustes <- function(x, target) {
   s <- svd(crossprod(x, scale(target, scale = FALSE)))
   x %*% s$u %*% t(s$v)
 }
-rotated <- procrustes(as.matrix(select(ms_scores, MS1, MS2)),
-                      as.matrix(select(pca_snv_scores, PC1, PC2)))
+rotated <- procrustes(
+  as.matrix(select(ms_scores, MS1, MS2)),
+  as.matrix(select(pca_snv_scores, PC1, PC2))
+  )
 
 method_levels <- c("PCA", "Manifold Sculpting", "Manifold Sculpting, rotated")
 bind_rows(
@@ -282,14 +286,15 @@ bind_rows(
   labs(x = "First dimension", y = "Second dimension")
 ```
 
-![PCA scores and two-dimensional Manifold Sculpting embedding of the SNV spectra, as computed and rotated onto the PCA scores, colored by fat content.](spectroscopy-fig-two-d-1.png)
+![PCA scores and two-dimensional Manifold Sculpting embedding of the SNV
+spectra, as computed and rotated onto the PCA scores, colored by fat
+content.](spectroscopy-fig-two-d-1.png)
 
 The embedding looks different from the PCA scores, but the orientation
 and the scale of the axes of an embedding are arbitrary, and only its
 shape matters. Rotated onto the PCA scores (right), it is the same arch:
-each dimension of the embedding is almost exactly a linear combination of
-the first two principal components.
-
+each dimension of the embedding is almost exactly a linear combination
+of the first two principal components.
 
 ``` r
 # Share of each dimension of the embedding explained by PC1 and PC2
@@ -303,24 +308,23 @@ round(two_d_r2, 3)
 #> 0.993 0.996
 ```
 
-This is how Manifold Sculpting should behave. It preserves the geometry of
-neighborhoods, and an arch that lies in a plane already has room to keep
-it in two dimensions: straightening the arch would stretch its outer edge
-and compress its inner one. The method unfolds a structure only when the
-number of dimensions forces it to, as for the Swiss roll, a sheet rolled
-up in three dimensions that is laid flat in two. The agreement with PCA is
-thus a finding in itself: the arch is a genuine curve of the spectra,
-lying in the plane of the first two components (which carry
-97%
-of the variance), and not the shadow of a structure folded in more
-dimensions, which a projection would hide.
+This is how Manifold Sculpting should behave. It preserves the geometry
+of neighborhoods, and an arch that lies in a plane already has room to
+keep it in two dimensions: straightening the arch would stretch its
+outer edge and compress its inner one. The method unfolds a structure
+only when the number of dimensions forces it to, as for the Swiss roll,
+a sheet rolled up in three dimensions that is laid flat in two. The
+agreement with PCA is thus a finding in itself: the arch is a genuine
+curve of the spectra, lying in the plane of the first two components
+(which carry 97% of the variance), and not the shadow of a structure
+folded in more dimensions, which a projection would hide.
 
 ## One dimension unfolds it
 
 The arch is a single gradient bent in two dimensions, and with one
-dimension, Manifold Sculpting has to unfold it. The `manifold_sculpting()`
-function computes the embedding directly from the matrix of SNV spectra:
-
+dimension, Manifold Sculpting has to unfold it. The
+`manifold_sculpting()` function computes the embedding directly from the
+matrix of SNV spectra:
 
 ``` r
 snv <- as.matrix(select(meats_snv, starts_with("x_")))
@@ -342,23 +346,24 @@ coordinates <- pca_snv_scores |>
   mutate(MS = along_fat(ms_1d$embedding[, 1]), PC1_fat = along_fat(PC1))
 ```
 
-
 ``` r
-ggplot(coordinates, aes(PC1_fat, MS, colour = fat)) +
+ggplot(coordinates) +
+  aes(PC1_fat, MS, colour = fat)
   geom_point(size = 1.5) +
   fat_colours +
   labs(x = "First principal component", y = "Manifold Sculpting, 1 dimension")
 ```
 
-![The one-dimensional Manifold Sculpting embedding against the first principal component, colored by fat content.](spectroscopy-fig-pc1-ms-1.png)
+![The one-dimensional Manifold Sculpting embedding against the first
+principal component, colored by fat
+content.](spectroscopy-fig-pc1-ms-1.png)
 
 The two coordinates agree at the lean end of the arch, but not where it
 turns. The first principal component projects the samples across the
 arch, so that samples at its top and on its steep right arm can have the
-same score. The embedding follows the arch, and places the leaner samples
-of the top before the fatter samples of the arm, which sit above them in
-the plot. It is therefore closer to the gradient of composition:
-
+same score. The embedding follows the arch, and places the leaner
+samples of the top before the fatter samples of the arm, which sit above
+them in the plot. It is therefore closer to the gradient of composition:
 
 ``` r
 first_dimension <- coordinates |>
@@ -382,7 +387,6 @@ linearity
 #> 3 protein     0.320                             0.371
 ```
 
-
 ``` r
 ggplot(first_dimension, aes(dimension, percent)) +
   geom_point(size = 1, colour = blues[2], alpha = 0.6) +
@@ -391,39 +395,39 @@ ggplot(first_dimension, aes(dimension, percent)) +
   labs(x = NULL, y = "Content (%)")
 ```
 
-![Contents against the first principal component and against the one-dimensional Manifold Sculpting embedding, with a straight-line fit.](spectroscopy-fig-one-d-1.png)
+![Contents against the first principal component and against the
+one-dimensional Manifold Sculpting embedding, with a straight-line
+fit.](spectroscopy-fig-one-d-1.png)
 
-A straight line on the one-dimensional embedding explains
-74% of the
-variance of water and
-69% of fat,
-against 51%
-and 45% for
-the first principal component, whose relation with the contents bends at
-the ends of the arch. Protein gains less
-(37%
-against 32%):
-it decreases as fat increases, but it is not a function of the fat and
-water gradient alone. No reference value was used to obtain this
-coordinate.
+A straight line on the one-dimensional embedding explains 74% of the
+variance of water and 69% of fat, against 51% and 45% for the first
+principal component, whose relation with the contents bends at the ends
+of the arch. Protein gains less (37% against 32%): it decreases as fat
+increases, but it is not a function of the fat and water gradient alone.
+No reference value was used to obtain this coordinate.
 
 ## How stable is the coordinate?
 
 An exploratory embedding is only useful if its features do not depend on
 the settings. The coordinate is computed again with 10 to 45 neighbors:
 
-
 ``` r
 k_values <- c(10, 20, 30, 45)
 stability <- lapply(k_values, function(k) {
   set.seed(1)
   fit <- manifold_sculpting(snv, ndim = 1, neighbors = k, nstart = 3)
-  tibble(neighbors = k, sample = seq_len(nrow(snv)),
-         MS = along_fat(fit$embedding[, 1]))
-}) |>
+  tibble(
+    neighbors = k, 
+    sample = seq_len(nrow(snv)),
+    MS = along_fat(fit$embedding[, 1])
+    )
+  }) |>
   bind_rows() |>
-  left_join(coordinates |> mutate(sample = row_number()), by = "sample",
-            suffix = c("", "_20"))
+  left_join(
+    coordinates |> mutate(sample = row_number()), 
+    by = "sample",
+    suffix = c("", "_20")
+    )
 
 stability_summary <- stability |>
   group_by(neighbors) |>
@@ -443,7 +447,6 @@ stability_summary
 #> 4        45        0.935    0.643  0.587      0.372
 ```
 
-
 ``` r
 stability |>
   filter(neighbors != 20) |>
@@ -455,27 +458,24 @@ stability |>
   labs(x = "Embedding with 20 neighbors", y = "Embedding")
 ```
 
-![One-dimensional embeddings computed with 10, 30 and 45 neighbors, against the embedding computed with 20 neighbors, colored by fat content.](spectroscopy-fig-stability-1.png)
+![One-dimensional embeddings computed with 10, 30 and 45 neighbors,
+against the embedding computed with 20 neighbors, colored by fat
+content.](spectroscopy-fig-stability-1.png)
 
 The order of the samples is stable: whatever the number of neighbors,
-the coordinate ranks them nearly as with 20 neighbors (a rank correlation
-of at least 0.88). How
-evenly it spreads them varies more, as the bends in the plots show, and
-with it the share of the variance of water that a straight line explains,
-from
-52% to
-74% (against
-51% for the
-first principal component). Trying a few numbers of neighbors, as here,
-tells which features of an embedding can be trusted.
+the coordinate ranks them nearly as with 20 neighbors (a rank
+correlation of at least 0.88). How evenly it spreads them varies more,
+as the bends in the plots show, and with it the share of the variance of
+water that a straight line explains, from 52% to 74% (against 51% for
+the first principal component). Trying a few numbers of neighbors, as
+here, tells which features of an embedding can be trusted.
 
 ## What drives the coordinate
 
 Manifold Sculpting has no loadings, but the correlation between the SNV
-absorbance at each wavelength and the coordinate shows which parts of the
-spectra it follows. The same correlations with the first principal
+absorbance at each wavelength and the coordinate shows which parts of
+the spectra it follows. The same correlations with the first principal
 component and with the fat content are shown for comparison:
-
 
 ``` r
 profiles <- tibble(
@@ -496,7 +496,6 @@ round(profile_fit, 3)
 peak <- profiles$wavelength[which.max(profiles[["Manifold Sculpting"]])]
 ```
 
-
 ``` r
 profiles_long <- profiles |>
   pivot_longer(-wavelength, names_to = "variable", values_to = "r") |>
@@ -514,47 +513,54 @@ ggplot(profiles_long, aes(wavelength, r, colour = variable, linetype = variable)
   theme(legend.position = "top")
 ```
 
-![Correlation between the SNV absorbance at each wavelength and the one-dimensional embedding, the first principal component and the fat content.](spectroscopy-fig-profiles-1.png)
+![Correlation between the SNV absorbance at each wavelength and the
+one-dimensional embedding, the first principal component and the fat
+content.](spectroscopy-fig-profiles-1.png)
 
 The profile of the coordinate is almost that of the fat content (a
-correlation of 0.99
-between the two profiles, against
-0.85 for the first principal
-component), with its maximum at 929 nm, at the absorption band
+correlation of 0.99 between the two profiles, against 0.85 for the first
+principal component), with its maximum at 929 nm, at the absorption band
 of fat near 930 nm (third overtone of the C–H stretching vibration). The
-coordinate is the gradient of fat against water, while the first principal
-component mixes it with the bending of the arch.
+coordinate is the gradient of fat against water, while the first
+principal component mixes it with the bending of the arch.
 
 ## What unfolding does not do
 
 The coordinate follows the main gradient of composition, without any
 reference value. Does unfolding also help to predict a minor constituent
-such as protein? Principal component regression and its Manifold Sculpting
-analog, a linear regression on 1 to 6 dimensions, are compared by 10-fold
-cross-validation, with 20 neighbors as above and with 60:
-
+such as protein? Principal component regression and its Manifold
+Sculpting analog, a linear regression on 1 to 6 dimensions, are compared
+by 10-fold cross-validation, with 20 neighbors as above and with 60:
 
 ``` r
 set.seed(2026)
 folds <- vfold_cv(meats_snv, v = 10, strata = protein)
 
 pca_wflow <- workflow(
-  base_recipe(meats_snv) |>
-    step_pca(all_predictors(), num_comp = tune()),
+  base_recipe(meats_snv) |> step_pca(all_predictors(), num_comp = tune()),
   linear_reg()
 )
 ms_wflow <- workflow(
   base_recipe(meats_snv) |>
-    step_manifold_sculpting(all_predictors(), num_comp = tune(), neighbors = tune(),
-                            options = list(nstart = 3), seed = 1),
+    step_manifold_sculpting(
+      all_predictors(), 
+      num_comp = tune(), 
+      neighbors = tune(),
+      options = list(nstart = 3), seed = 1),
   linear_reg()
-)
+  )
 
-pca_cv <- tune_grid(pca_wflow, resamples = folds, grid = tibble(num_comp = 1:6),
-                    metrics = metric_set(rmse))
-ms_cv <- tune_grid(ms_wflow, resamples = folds,
-                   grid = crossing(num_comp = 1:6, neighbors = c(20, 60)),
-                   metrics = metric_set(rmse))
+pca_cv <- tune_grid(
+  pca_wflow, 
+  resamples = folds, 
+  grid = tibble(num_comp = 1:6), metrics = metric_set(rmse)
+  )
+
+ms_cv <- tune_grid(
+  ms_wflow, 
+  resamples = folds,
+  grid = crossing(num_comp = 1:6, neighbors = c(20, 60)), metrics = metric_set(rmse)
+  )
 
 cv_results <- bind_rows(
   collect_metrics(pca_cv) |> mutate(model = "PCA"),
@@ -574,7 +580,6 @@ cv_results |>
 #> 3 MS, k = 60        6  1.26  0.0752
 ```
 
-
 ``` r
 ggplot(cv_results, aes(num_comp, mean, colour = model)) +
   geom_line(linewidth = 0.8) +
@@ -585,72 +590,66 @@ ggplot(cv_results, aes(num_comp, mean, colour = model)) +
   theme(legend.position = "top")
 ```
 
-![Cross-validated RMSE of the protein predictions against the number of dimensions.](spectroscopy-fig-cv-1.png)
-
-
+![Cross-validated RMSE of the protein predictions against the number of
+dimensions.](spectroscopy-fig-cv-1.png)
 
 With the 20 neighbors that unfold the arch, the regression on the
 embedding is clearly worse than principal component regression (a
-cross-validated RMSE of 1.78 at best,
-against 1.26). With 60 neighbors, it is as
-accurate (1.26). Protein absorbs weakly
-between 850 and 1050 nm, where the bands of water and fat dominate, and
-much of its signal is in directions of small variance: the third principal
-component, with 1.6% of
-the variance, reduces the RMSE of principal component regression from
-2.29 to
-1.31. Manifold
-Sculpting, which preserves the geometry of neighborhoods, keeps such small
-variations only with large neighborhoods, where it behaves like a global
-method. For the calibration of a minor constituent, a linear model on
-enough components, such as principal component regression or partial
-least squares, is as accurate and simpler.
+cross-validated RMSE of 1.78 at best, against 1.26). With 60 neighbors,
+it is as accurate (1.26). Protein absorbs weakly between 850 and 1050
+nm, where the bands of water and fat dominate, and much of its signal is
+in directions of small variance: the third principal component, with
+1.6% of the variance, reduces the RMSE of principal component regression
+from 2.29 to 1.31. Manifold Sculpting, which preserves the geometry of
+neighborhoods, keeps such small variations only with large
+neighborhoods, where it behaves like a global method. For the
+calibration of a minor constituent, a linear model on enough components,
+such as principal component regression or partial least squares, is as
+accurate and simpler.
 
 ## What we see
 
 - **The arch is the gradient of fat.** Once the scatter is removed, the
   PCA scores lie on an arch, along which fat increases from one end to
   the other: one nonlinear gradient bent over two components.
-- **Two dimensions keep the arch.** The two-dimensional embedding has the
-  shape of the PCA scores: the arch is a genuine curve of the spectra,
-  lying in a plane, which Manifold Sculpting has no reason to straighten.
+- **Two dimensions keep the arch.** The two-dimensional embedding has
+  the shape of the PCA scores: the arch is a genuine curve of the
+  spectra, lying in a plane, which Manifold Sculpting has no reason to
+  straighten.
 - **One dimension unfolds it.** The one-dimensional embedding orders the
-  samples along the arch, and its profile over the wavelengths is that of
-  fat. With 20 neighbors, it follows water and fat much more closely than
-  the first principal component; its order is stable across numbers of
-  neighbors, but how much closer it is varies.
-- **Unfolding is not calibration.** The embedding does not predict protein
-  better than the principal components, and matches them only with large
-  neighborhoods.
+  samples along the arch, and its profile over the wavelengths is that
+  of fat. With 20 neighbors, it follows water and fat much more closely
+  than the first principal component; its order is stable across numbers
+  of neighbors, but how much closer it is varies.
+- **Unfolding is not calibration.** The embedding does not predict
+  protein better than the principal components, and matches them only
+  with large neighborhoods.
 
 Manifold Sculpting is thus an exploratory tool for spectra: it tells
 whether a curved structure in a score plot is genuine, and gives a
 coordinate along it without reference values. The same approach applies
 whenever spectra follow one curved path, as in the monitoring of a
 process, a reaction or the ripening of a product over time, where such a
-coordinate can track progress before any reference analysis is available.
+coordinate can track progress before any reference analysis is
+available.
 
-## Reproducibility
+## Reproducibility {#reproducibility}
 
 The vignette was computed with the following versions:
 
-
-
-|Package           |Version |
-|:-----------------|:-------|
-|manifoldsculpting |1.2.1   |
-|modeldata         |1.6.0   |
-|recipes           |1.4.0   |
-|rsample           |1.3.2   |
-|parsnip           |1.6.1   |
-|workflows         |1.3.0   |
-|tune              |2.1.0   |
-|yardstick         |1.4.0   |
-|dplyr             |1.2.1   |
-|tidyr             |1.3.2   |
-|ggplot2           |4.0.3   |
-
-
+| Package           | Version |
+|:------------------|:--------|
+| manifoldsculpting | 1.2.1   |
+| modeldata         | 1.6.0   |
+| recipes           | 1.4.0   |
+| rsample           | 1.3.2   |
+| parsnip           | 1.6.1   |
+| workflows         | 1.3.0   |
+| tune              | 2.1.0   |
+| yardstick         | 1.4.0   |
+| dplyr             | 1.2.1   |
+| tidyr             | 1.3.2   |
+| ggplot2           | 4.0.3   |
 
 To compute it again, install these packages and run
 `vignettes/precompute.R` from the source of the package. It knits
